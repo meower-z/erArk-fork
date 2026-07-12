@@ -12,6 +12,7 @@ from Script.Design import (
     character_behavior,
     handle_npc_ai_in_h,
     handle_premise,
+    hypnosis_state,
     clothing,
     handle_ability,
     second_behavior,
@@ -1572,17 +1573,8 @@ def handle_hypnosis_cancel(
     # 空气催眠则重置催眠地点和解开门锁
     if target_character_data.sp_flag.unconscious_h == 5:
         character_data.pl_ability.air_hypnosis_position = ""
-    # 清零催眠H状态
-    if target_character_data.sp_flag.unconscious_h >= 4:
-        target_character_data.sp_flag.unconscious_h = 0
-    # 去掉大部分的心体催眠状态
-    target_character_data.hypnosis.increase_body_sensitivity = False
-    target_character_data.hypnosis.blockhead = False
-    target_character_data.hypnosis.active_h = False
-    target_character_data.hypnosis.roleplay = []
-    # 结算异常flag
-    handle_premise.settle_chara_unnormal_flag(character_data.target_character_id, 5)
-    handle_premise.settle_chara_unnormal_flag(character_data.target_character_id, 6)
+    # 清理目标的催眠运行态
+    hypnosis_state.clear_hypnosis_runtime_state(character_data.target_character_id)
     # 结算二段行为
     handle_npc_ai_in_h.settle_unconscious_semen_and_cloth(character_id)
 
@@ -5611,16 +5603,7 @@ def handle_hypnosis_flag_to_0(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
-    if character_data.sp_flag.unconscious_h in [4, 5, 6, 7]:
-        character_data.sp_flag.unconscious_h = 0
-    handle_premise.settle_chara_unnormal_flag(character_id, 5)
-    handle_premise.settle_chara_unnormal_flag(character_id, 6)
-    character_data.hypnosis.increase_body_sensitivity = False
-    character_data.hypnosis.blockhead = False
-    character_data.hypnosis.active_h = False
-    character_data.hypnosis.pain_as_pleasure = False
-    character_data.hypnosis.roleplay = []
+    hypnosis_state.clear_hypnosis_runtime_state(character_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.TARGET_ANGRY_WITH_PLAYER_FLAG_TO_0)
