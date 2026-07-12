@@ -234,6 +234,9 @@ def find_character_target(character_id: int, now_time: datetime.datetime):
     查询角色可用目标活动并赋给角色
     Keyword arguments:
     character_id -- 角色id
+    now_time -- 当前时间
+    Return arguments:
+    object | None -- 选中的状态机返回值，无可用活动时无返回值
     """
     character_data: game_type.Character = cache.character_data[character_id]
     start_time = character_data.behavior.start_time
@@ -421,7 +424,7 @@ def find_character_target(character_id: int, now_time: datetime.datetime):
         # if state_machine_id >= 100:
         #     character_data.sp_flag.wait_flag = 1
             # print(f"debug 前一个状态机id = ",state_machine_id,",flag变为1,character_name =",character_data.name)
-        constant.handle_state_machine_data[state_machine_id](character_id)
+        return constant.handle_state_machine_data[state_machine_id](character_id)
         # if character_data.name == "阿米娅":
         #     print(f"debug 中：{character_data.name}，behavior_id = {game_config.config_status[character_data.state].name}，start_time = {character_data.behavior.start_time}, game_time = {now_time}")
     else:

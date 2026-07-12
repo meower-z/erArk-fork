@@ -1310,6 +1310,8 @@ def character_see_h_and_move_to_dormitory(character_id: int):
     目睹玩家和其他角色H
     Keyword arguments:
     character_id -- 角色id
+    Return arguments:
+    DiscoverySettlementResult | None -- 面板结算了明确的发现者行为时返回结果，否则无返回值
     """
     # 如果是关闭了隔间门的房间的话，则不会被看到
     if handle_premise.handle_place_inside_door_close(character_id):
@@ -1320,7 +1322,7 @@ def character_see_h_and_move_to_dormitory(character_id: int):
 
     # 绘制被发现面板
     now_panel = sex_be_discovered_panel.Sex_Be_Discovered_Panel(normal_config.config_normal.text_width, character_id)
-    now_panel.draw()
+    return now_panel.draw()
 
 @handle_state_machine.add_state_machine(constant.StateMachine.SINGING)
 def character_singing(character_id: int):

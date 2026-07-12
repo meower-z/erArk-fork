@@ -1,4 +1,5 @@
-from typing import List
+from dataclasses import dataclass
+from typing import Callable, List, Optional
 from types import FunctionType
 from Script.System.Instruct_System import handle_instruct
 from Script.UI.Moudle import draw
@@ -28,6 +29,16 @@ line_feed.width = 1
 window_width = normal_config.config_normal.text_width
 """ 屏幕宽度 """
 
+
+@dataclass(frozen=True)
+class DiscoverySettlementResult:
+    """发现者反应结算完成后交给NPC调度器的结果。"""
+
+    discoverer_id: int
+    settled_behavior_id: str
+    replacement_behavior_id: Optional[str]
+
+
 class Sex_Be_Discovered_Panel:
     """
     H中被发现后的选择面板
@@ -48,9 +59,58 @@ class Sex_Be_Discovered_Panel:
         """ 玩家角色数据 """
         self.target_chara_data = cache.character_data[self.pl_chara_data.target_character_id]
         """ 玩家交互对象数据 """
+        self._discovery_commit_started = False
+        """ 本次面板是否已经开始提交明确的发现者行为 """
+        self._pending_behavior_id: Optional[str] = None
+        """ 面板关闭后待结算的发现者行为 """
+        self._pending_followup: Optional[Callable[[], None]] = None
+        """ 发现者行为结算后待执行的玩家后续处理 """
+        self._dispatch_result: Optional[DiscoverySettlementResult] = None
+        """ 已完成的发现者行为结算结果 """
 
-    def draw(self) -> None:
-        """绘制面板"""
+    def _set_pending_discoverer_behavior(self, behavior_id: str, followup: Optional[Callable[[], None]] = None) -> None:
+        """
+        记录面板关闭后需要结算的发现者行为
+        Keyword arguments:
+        behavior_id -- 发现者行为id
+        followup -- 发现者结算后的玩家后续处理
+        """
+        if self._pending_behavior_id is not None or self._discovery_commit_started:
+            raise RuntimeError("发现者行为结算已经开始，不能重复提交")
+        self._pending_behavior_id = behavior_id
+        self._pending_followup = followup
+
+    def _commit_pending_discoverer_behavior(self) -> Optional[DiscoverySettlementResult]:
+        """
+        一次性结算已记录的发现者行为
+        Return arguments:
+        DiscoverySettlementResult | None -- 已完成的发现者行为结算结果，无待处理行为时无返回值
+        """
+        from Script.Design import character_behavior
+
+        if self._pending_behavior_id is None:
+            return None
+        if self._discovery_commit_started:
+            raise RuntimeError("发现者行为结算已经开始，不能重复提交")
+        self._discovery_commit_started = True
+        behavior_id = self._pending_behavior_id
+        self.find_chara_data.behavior.behavior_id = behavior_id
+        self.find_chara_data.behavior.duration = game_config.config_behavior[behavior_id].duration
+        character_behavior.judge_character_status(self.character_id)
+        current_behavior_id = self.find_chara_data.behavior.behavior_id
+        replacement_behavior_id = current_behavior_id if current_behavior_id != behavior_id else None
+        result = DiscoverySettlementResult(self.character_id, behavior_id, replacement_behavior_id)
+        self._dispatch_result = result
+        if self._pending_followup is not None:
+            self._pending_followup()
+        return result
+
+    def draw(self) -> Optional[DiscoverySettlementResult]:
+        """
+        绘制被发现选择面板并处理玩家选择
+        Return arguments:
+        DiscoverySettlementResult | None -- 结算了明确的发现者行为时返回结果，否则无返回值
+        """
 
         title_draw = draw.TitleLineDraw(_("H中被发现"), self.width)
 
@@ -160,7 +220,7 @@ class Sex_Be_Discovered_Panel:
             yrn = flow_handle.askfor_all(return_list)
             if yrn in return_list:
                 cache.now_panel_id = constant.Panel.IN_SCENE
-                break
+                return self._commit_pending_discoverer_behavior()
 
     def _let_find_chara_away(self) -> None:
         """选择用花言巧语支开对方"""
@@ -173,12 +233,11 @@ class Sex_Be_Discovered_Panel:
             pass_flag = True
         # 如果通过
         if pass_flag:
-            self.find_chara_data.behavior.behavior_id = constant.Behavior.SEE_H_BUT_DECEIVED
-            self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
             # 绘制结果
             now_draw = draw.NormalDraw()
             now_draw.text = now_draw_text
             now_draw.draw()
+            self._set_pending_discoverer_behavior(constant.Behavior.SEE_H_BUT_DECEIVED)
         # 未通过
         else:
             self._end_current_h()
@@ -203,12 +262,10 @@ class Sex_Be_Discovered_Panel:
             # 判断对方的实行值
             # 如果是也愿意露出的等级，则无视
             if instuct_judege.calculation_instuct_judege(0, self.character_id, _("露出"))[0]:
-                self.find_chara_data.behavior.behavior_id = constant.Behavior.SEE_H_BUT_IGNORE
-                self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
+                self._set_pending_discoverer_behavior(constant.Behavior.SEE_H_BUT_IGNORE)
             # 如果是能接受H的等级，则自己离开
             elif instuct_judege.calculation_instuct_judege(0, self.character_id, _("H模式"))[0]:
-                self.find_chara_data.behavior.behavior_id = constant.Behavior.SEE_H_AND_LEAVE
-                self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
+                self._set_pending_discoverer_behavior(constant.Behavior.SEE_H_AND_LEAVE)
             # 否则打断当前H
             else:
                 self._end_current_h()
@@ -225,41 +282,37 @@ class Sex_Be_Discovered_Panel:
 
     def _invite_find_char_to_join(self) -> None:
         """选择邀请对方加入群交"""
-        from Script.Design import character_behavior
         # 判断是否满足加入群交条件
         if handle_premise.handle_instruct_judge_group_sex(self.character_id):
             # 如果当前在群交中，则直接加入
             if handle_premise.handle_group_sex_mode_on(0):
-                self.find_chara_data.behavior.behavior_id = constant.Behavior.JOIN_GROUP_SEX
-                self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
-                character_behavior.judge_character_status(self.character_id)
+                self._set_pending_discoverer_behavior(constant.Behavior.JOIN_GROUP_SEX)
             # 不在群交中则转为群交
             else:
-                self.find_chara_data.behavior.behavior_id = constant.Behavior.DISCOVER_OTHER_SEX_AND_JOIN
-                self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
-                handle_instruct.chara_handle_instruct_common_settle(constant.Behavior.OTHER_SEX_BE_FOUND_TO_GROUP_SEX)
-                # 结算成就
-                achievement_panel.get_achievement_judge_by_value(905, 1)
+                self._set_pending_discoverer_behavior(constant.Behavior.DISCOVER_OTHER_SEX_AND_JOIN, self._convert_to_group_sex)
         else:
             # 如果当前在群交中，则拒绝加入
             if handle_premise.handle_group_sex_mode_on(0):
-                self.find_chara_data.behavior.behavior_id = constant.Behavior.REFUSE_JOIN_GROUP_SEX
-                self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
-                character_behavior.judge_character_status(self.character_id)
+                self._set_pending_discoverer_behavior(constant.Behavior.REFUSE_JOIN_GROUP_SEX)
             # 不在群交中则结束当前H
             else:
                 self._end_current_h()
 
     def _end_current_h(self) -> None:
         """选择结束当前H"""
-        from Script.Design import character_behavior
         # 交互对象进入被打断状态
         self.target_chara_data.action_info.h_interrupt = 1
         # 发现者变为打断行为
-        self.find_chara_data.behavior.behavior_id = constant.Behavior.SEE_H_AND_INTERRUPT
-        self.find_chara_data.behavior.duration = game_config.config_behavior[self.find_chara_data.behavior.behavior_id].duration
-        # 手动结算该状态
-        character_behavior.judge_character_status(self.character_id)
+        self._set_pending_discoverer_behavior(constant.Behavior.SEE_H_AND_INTERRUPT, self._finish_current_h)
+
+    def _convert_to_group_sex(self) -> None:
+        """结算被发现后转为群交的玩家后续处理。"""
+        handle_instruct.chara_handle_instruct_common_settle(constant.Behavior.OTHER_SEX_BE_FOUND_TO_GROUP_SEX)
+        # 结算成就
+        achievement_panel.get_achievement_judge_by_value(905, 1)
+
+    def _finish_current_h(self) -> None:
+        """结算发现者打断后的玩家后续处理。"""
         # 如果是在群交中，则结束群交
         if handle_premise.handle_group_sex_mode_on(0):
             self.pl_chara_data.behavior.behavior_id = constant.Behavior.GROUP_SEX_END
