@@ -65,8 +65,6 @@ class Sex_Be_Discovered_Panel:
         """ 面板关闭后待结算的发现者行为 """
         self._pending_followup: Optional[Callable[[], None]] = None
         """ 发现者行为结算后待执行的玩家后续处理 """
-        self._dispatch_result: Optional[DiscoverySettlementResult] = None
-        """ 已完成的发现者行为结算结果 """
 
     def _set_pending_discoverer_behavior(self, behavior_id: str, followup: Optional[Callable[[], None]] = None) -> None:
         """
@@ -100,7 +98,6 @@ class Sex_Be_Discovered_Panel:
         current_behavior_id = self.find_chara_data.behavior.behavior_id
         replacement_behavior_id = current_behavior_id if current_behavior_id != behavior_id else None
         result = DiscoverySettlementResult(self.character_id, behavior_id, replacement_behavior_id)
-        self._dispatch_result = result
         if self._pending_followup is not None:
             self._pending_followup()
         return result
