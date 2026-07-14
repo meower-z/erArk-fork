@@ -1309,7 +1309,7 @@ def character_see_h_and_move_to_dormitory(character_id: int):
     """
     目睹玩家和其他角色H
     Keyword arguments:
-    character_id -- 角色id
+    character_id (int) -- 角色id
     Return arguments:
     DiscoverySettlementResult | None -- 面板结算了明确的发现者行为时返回结果，否则无返回值
     """

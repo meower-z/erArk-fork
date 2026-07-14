@@ -169,21 +169,10 @@ def character_behavior(character_id: int, now_time: datetime.datetime, pl_start_
         if character_data.behavior.behavior_id == constant.Behavior.SHARE_BLANKLY:
             # 寻找可用行动
             dispatch_result = handle_npc_ai.find_character_target(character_id, now_time)
-            discovery_replacement_behavior_id = None
-            discovery_settlement_result = False
-            if dispatch_result is not None:
-                from Script.System.Sex_System.sex_be_discovered_panel import DiscoverySettlementResult
+            from Script.System.Sex_System.sex_be_discovered_panel import DiscoverySettlementResult
 
-                if type(dispatch_result) is DiscoverySettlementResult:
-                    discovery_settlement_result = True
-                    if dispatch_result.discoverer_id != character_id:
-                        raise RuntimeError(f"发现结算角色不匹配：当前角色{character_id}，结果角色{dispatch_result.discoverer_id}")
-                    discovery_replacement_behavior_id = dispatch_result.replacement_behavior_id
-            # 结算状态与事件
-            if not discovery_settlement_result:
-                judge_character_status(character_id)
-            # 发现者反应产生的新行为仍在等待时，在当前轮继续结算
-            elif discovery_replacement_behavior_id is not None and character_data.behavior.behavior_id == discovery_replacement_behavior_id:
+            # 普通调度照常结算；发现反应只继续结算仍有效的后继行为
+            if not isinstance(dispatch_result, DiscoverySettlementResult) or dispatch_result.replacement_behavior_id == character_data.behavior.behavior_id:
                 judge_character_status(character_id)
         # 移动情况下也直接结算
         elif character_data.behavior.behavior_id == constant.Behavior.MOVE:

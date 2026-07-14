@@ -233,8 +233,8 @@ def find_character_target(character_id: int, now_time: datetime.datetime):
     """
     查询角色可用目标活动并赋给角色
     Keyword arguments:
-    character_id -- 角色id
-    now_time -- 当前时间
+    character_id (int) -- 角色id
+    now_time (datetime.datetime) -- 当前时间
     Return arguments:
     object | None -- 选中的状态机返回值，无可用活动时无返回值
     """
