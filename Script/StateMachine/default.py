@@ -1310,8 +1310,7 @@ def character_see_h_and_move_to_dormitory(character_id: int):
     目睹玩家和其他角色H
     Keyword arguments:
     character_id (int) -- 角色id
-    Return arguments:
-    DiscoverySettlementResult | None -- 面板结算了明确的发现者行为时返回结果，否则无返回值
+    Return arguments: bool | None -- 面板是否已结算明确的发现者反应
     """
     # 如果是关闭了隔间门的房间的话，则不会被看到
     if handle_premise.handle_place_inside_door_close(character_id):

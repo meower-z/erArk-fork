@@ -235,8 +235,7 @@ def find_character_target(character_id: int, now_time: datetime.datetime):
     Keyword arguments:
     character_id (int) -- 角色id
     now_time (datetime.datetime) -- 当前时间
-    Return arguments:
-    object | None -- 选中的状态机返回值，无可用活动时无返回值
+    Return arguments: bool | None -- 发现者反应是否已结算，无可用活动时无返回值
     """
     character_data: game_type.Character = cache.character_data[character_id]
     start_time = character_data.behavior.start_time

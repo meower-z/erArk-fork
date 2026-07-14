@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 from types import FunctionType
 from Script.System.Instruct_System import handle_instruct
 from Script.UI.Moudle import draw
@@ -30,13 +29,6 @@ window_width = normal_config.config_normal.text_width
 """ 屏幕宽度 """
 
 
-@dataclass(frozen=True)
-class DiscoverySettlementResult:
-    """发现者反应结算完成后交给NPC调度器的结果。"""
-
-    replacement_behavior_id: Optional[str]
-
-
 class Sex_Be_Discovered_Panel:
     """
     H中被发现后的选择面板
@@ -57,32 +49,20 @@ class Sex_Be_Discovered_Panel:
         """ 玩家角色数据 """
         self.target_chara_data = cache.character_data[self.pl_chara_data.target_character_id]
         """ 玩家交互对象数据 """
-        self._settlement_result: Optional[DiscoverySettlementResult] = None
-        """ 已完成的发现者反应结算结果 """
+        self._discoverer_reaction_settled = False
+        """ 是否已结算明确的发现者反应 """
 
     def _settle_discoverer_reaction(self, behavior_id: str) -> None:
-        """
-        在选项回调内同步结算发现者反应，并保存NPC调度器需要的后继行为
-        Keyword arguments:
-        behavior_id (str) -- 发现者行为id
-        Return arguments:
-        None -- 无返回值
-        """
+        """结算发现者反应；behavior_id (str) 为行为id；无返回值。"""
         from Script.Design import character_behavior
 
         self.find_chara_data.behavior.behavior_id = behavior_id
         self.find_chara_data.behavior.duration = game_config.config_behavior[behavior_id].duration
         character_behavior.judge_character_status(self.character_id)
-        current_behavior_id = self.find_chara_data.behavior.behavior_id
-        replacement_behavior_id = current_behavior_id if current_behavior_id != behavior_id else None
-        self._settlement_result = DiscoverySettlementResult(replacement_behavior_id)
+        self._discoverer_reaction_settled = True
 
-    def draw(self) -> Optional[DiscoverySettlementResult]:
-        """
-        绘制被发现选择面板并处理玩家选择
-        Return arguments:
-        DiscoverySettlementResult | None -- 结算了明确的发现者行为时返回结果，否则无返回值
-        """
+    def draw(self) -> bool:
+        """绘制并处理被发现面板；返回bool，表示是否已结算明确反应。"""
 
         title_draw = draw.TitleLineDraw(_("H中被发现"), self.width)
 
@@ -192,7 +172,7 @@ class Sex_Be_Discovered_Panel:
             yrn = flow_handle.askfor_all(return_list)
             if yrn in return_list:
                 cache.now_panel_id = constant.Panel.IN_SCENE
-                return self._settlement_result
+                return self._discoverer_reaction_settled
 
     def _let_find_chara_away(self) -> None:
         """选择用花言巧语支开对方"""
