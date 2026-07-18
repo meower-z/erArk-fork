@@ -303,6 +303,23 @@ textbox = Text(
 )
 textbox.grid(column=0, row=0, sticky=(N, W, E, S))
 
+
+def _clear_textbox_selection(event=None):
+    """清除 textbox 的原生文本选区，输入 event 为 Tk 事件对象、可为 None；无返回值。
+    显示用 textbox 的选区背景色（selectbackground）被设为红色，而正文里嵌有透明 PNG
+    （立绘、状态条小图）。玩家在文字区快速连点会触发 Tk Text 的原生双击选词/三击选行，
+    选区一旦覆盖这些透明图，红色选区背景便从透明处透出，形成"露红底"。
+    此处在顶层窗口的左键按下事件上追加一个清选区处理器：bindtags 派发顺序为
+    widget→class→toplevel，双击/三击时 Text 类绑定先建立选区，随后本处理器清除它，
+    红底在下一次重绘前即消失。追加式绑定（add="+"）不影响既有键鼠处理，且只清"按下"
+    这一刻的旧选区，拖拽（B1-Motion）过程中新建的选区不受影响，玩家仍可拖选复制文本。"""
+    textbox.tag_remove("sel", "1.0", "end")
+
+
+# 追加到顶层窗口（root，即 textbox 的 toplevel）：其绑定在 Text 类绑定之后派发，
+# 才能清掉类绑定刚建立的选区；若改挂 textbox 实例级则会在类绑定选词之前跑而清不掉。
+root.bind("<ButtonPress-1>", _clear_textbox_selection, add="+")
+
 # 垂直滚动条
 s_vertical = ttk.Scrollbar(main_frame, orient=VERTICAL, command=textbox.yview)
 textbox.configure(yscrollcommand=s_vertical.set)
