@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish PR Screenshots"
+  short_description: "Publish erArk PR screenshots through the fork"
+  default_prompt: "Use $publish-pr-screenshots to publish approved erArk PR evidence images and update the PR."

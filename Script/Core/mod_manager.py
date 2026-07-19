@@ -58,6 +58,7 @@ class ModManager:
         self.mods: Dict[str, ModInfo] = {}
         self. enabled_mods: List[str] = []
         self.load_order: List[str] = []
+        self.scan_errors: Dict[str, str] = {}
         
     def get_mod_folder_path(self) -> str:
         """获取mod文件夹的绝对路径"""
@@ -77,8 +78,9 @@ class ModManager:
             return []
         
         self.mods. clear()
+        self.scan_errors.clear()
         
-        for item in os.listdir(mod_path):
+        for item in sorted(os.listdir(mod_path)):
             item_path = os.path. join(mod_path, item)
             if not os.path.isdir(item_path):
                 continue
@@ -91,6 +93,9 @@ class ModManager:
                 with open(info_file, "r", encoding="utf-8") as f:
                     info_dict = json. load(f)
                 mod_id = info_dict.get("mod_id", item)
+                if mod_id in self.mods:
+                    self.scan_errors[mod_id] = "重复mod_id: {0} 与 {1} 均声明为 {2}".format(self.mods[mod_id].mod_path, item_path, mod_id)
+                    continue
                 mod_info = ModInfo(mod_id, info_dict, item_path)
                 self. mods[mod_id] = mod_info
             except Exception as e:
@@ -190,17 +195,119 @@ class ModManager:
         return True
     
     def get_sorted_enabled_mods(self) -> List[ModInfo]:
-        """获取按加载顺序排序的已启用mod列表"""
+        """参数：无；返回：List[ModInfo]为依赖修正后的已启用mod列表；用途：获取按配置顺序和依赖关系排序的已启用mod。"""
+        configured_mod_ids = self._get_enabled_mod_ids_in_config_order()
+        configured_index = {mod_id: index for index, mod_id in enumerate(configured_mod_ids)}
+        enabled_mod_id_set = set(configured_mod_ids)
+        dependency_to_dependents = {mod_id: [] for mod_id in configured_mod_ids}
+        indegree = {mod_id: 0 for mod_id in configured_mod_ids}
+
+        for mod_id in configured_mod_ids:
+            for dependency_id in self.mods[mod_id].dependencies:
+                if dependency_id in enabled_mod_id_set:
+                    dependency_to_dependents[dependency_id].append(mod_id)
+                    indegree[mod_id] += 1
+
+        result_mod_ids = []
+        ready_mod_ids = [mod_id for mod_id in configured_mod_ids if indegree[mod_id] == 0]
+
+        # 稳定Kahn排序：每次选择原始配置顺序最靠前的可加载mod，避免重排无依赖关系的mod
+        while ready_mod_ids:
+            ready_mod_ids.sort(key=lambda mod_id: configured_index[mod_id])
+            mod_id = ready_mod_ids.pop(0)
+            if mod_id in result_mod_ids:
+                continue
+            result_mod_ids.append(mod_id)
+            for dependent_mod_id in dependency_to_dependents[mod_id]:
+                indegree[dependent_mod_id] -= 1
+                if indegree[dependent_mod_id] == 0:
+                    ready_mod_ids.append(dependent_mod_id)
+
+        # 循环依赖会在加载前报错并跳过，这里保持原顺序返回，避免吞掉错误mod
+        for mod_id in configured_mod_ids:
+            if mod_id not in result_mod_ids:
+                result_mod_ids.append(mod_id)
+
+        return [self.mods[mod_id] for mod_id in result_mod_ids]
+
+    def _get_enabled_mod_ids_in_config_order(self) -> List[str]:
+        """参数：无；返回：List[str]为配置顺序中的已启用mod ID；用途：保留原始启用顺序供依赖排序使用。"""
         result = []
         # 先按load_order排序
         for mod_id in self.load_order:
             if mod_id in self.enabled_mods and mod_id in self.mods:
-                result.append(self.mods[mod_id])
+                result.append(mod_id)
         # 再添加不在load_order中但已启用的mod
         for mod_id in self.enabled_mods:
             if mod_id not in self.load_order and mod_id in self.mods:
-                result. append(self.mods[mod_id])
+                result.append(mod_id)
         return result
+
+    def _get_missing_enabled_mod_errors(self) -> Dict[str, str]:
+        """参数：无；返回：Dict[str, str]为已启用但未扫描到的mod错误；用途：保留配置中缺失mod的启动诊断。"""
+        errors = {}
+        for mod_id in self.enabled_mods:
+            if mod_id not in self.mods:
+                errors[mod_id] = "已启用mod未找到: {0}".format(mod_id)
+        return errors
+
+    def _get_dependency_errors(self) -> Dict[str, str]:
+        """参数：无；返回：Dict[str, str]为mod ID到错误信息的映射；用途：检查已启用mod的缺失依赖和循环依赖。"""
+        errors = {}
+        enabled_mod_id_set = set(self.enabled_mods)
+        configured_mod_ids = self._get_enabled_mod_ids_in_config_order()
+
+        for mod_id in configured_mod_ids:
+            mod_info = self.mods[mod_id]
+            missing_dependencies = [
+                dependency_id
+                for dependency_id in mod_info.dependencies
+                if dependency_id not in self.mods or dependency_id not in enabled_mod_id_set
+            ]
+            if missing_dependencies:
+                errors[mod_id] = "缺少依赖mod: {0}".format(", ".join(missing_dependencies))
+
+        dependency_graph = {
+            mod_id: [
+                dependency_id
+                for dependency_id in self.mods[mod_id].dependencies
+                if dependency_id in self.mods and dependency_id in enabled_mod_id_set
+            ]
+            for mod_id in configured_mod_ids
+        }
+        cycle_mod_ids = self._find_dependency_cycle_mod_ids(dependency_graph)
+        if cycle_mod_ids:
+            for mod_id in cycle_mod_ids:
+                errors[mod_id] = "mod依赖存在循环: {0}".format(" -> ".join(cycle_mod_ids))
+
+        return errors
+
+    def _find_dependency_cycle_mod_ids(self, dependency_graph: Dict[str, List[str]]) -> List[str]:
+        """参数：dependency_graph(Dict[str, List[str]])为依赖图；返回：List[str]为循环中的mod ID；用途：检测mod依赖循环。"""
+        visiting = []
+        visited = set()
+
+        def visit(mod_id: str) -> Optional[List[str]]:
+            if mod_id in visiting:
+                cycle_start_index = visiting.index(mod_id)
+                return visiting[cycle_start_index:] + [mod_id]
+            if mod_id in visited:
+                return None
+
+            visiting.append(mod_id)
+            for dependency_id in dependency_graph.get(mod_id, []):
+                cycle = visit(dependency_id)
+                if cycle:
+                    return cycle
+            visiting.pop()
+            visited.add(mod_id)
+            return None
+
+        for mod_id in dependency_graph:
+            cycle = visit(mod_id)
+            if cycle:
+                return cycle
+        return []
     
     def load_all_enabled_mods(self) -> Dict[str, str]:
         """
@@ -208,20 +315,94 @@ class ModManager:
         返回:  {mod_id:  error_message} 加载失败的mod及错误信息
         """
         errors = {}
+        for mod_id in self._get_enabled_mod_ids_in_config_order():
+            if mod_id in self.scan_errors:
+                errors[mod_id] = self.scan_errors[mod_id]
+        errors.update(self._get_missing_enabled_mod_errors())
+        errors.update(self._get_dependency_errors())
         sorted_mods = self.get_sorted_enabled_mods()
+        loaded_mod_ids = set()
         
         for mod_info in sorted_mods:
+            if mod_info.mod_id in errors:
+                mod_info.error_message = errors[mod_info.mod_id]
+                print(f"[Mod] 跳过加载: {mod_info.name}, 错误: {mod_info.error_message}")
+                continue
+
+            unloaded_dependencies = [
+                dependency_id
+                for dependency_id in mod_info.dependencies
+                if dependency_id in self.enabled_mods and dependency_id not in loaded_mod_ids
+            ]
+            if unloaded_dependencies:
+                error_msg = "依赖mod尚未成功加载: {0}".format(", ".join(unloaded_dependencies))
+                mod_info.error_message = error_msg
+                errors[mod_info.mod_id] = error_msg
+                print(f"[Mod] 跳过加载: {mod_info.name}, 错误: {error_msg}")
+                continue
+
+            mutation_snapshot = self._snapshot_mod_mutations(mod_info)
             try: 
                 self._load_single_mod(mod_info)
                 mod_info.loaded = True
+                loaded_mod_ids.add(mod_info.mod_id)
                 print(f"[Mod] 成功加载: {mod_info.name} v{mod_info. version}")
             except Exception as e: 
+                self._restore_mod_mutations(mutation_snapshot)
                 error_msg = f"{str(e)}\n{traceback.format_exc()}"
                 mod_info.error_message = error_msg
                 errors[mod_info.mod_id] = error_msg
                 print(f"[Mod] 加载失败: {mod_info.name}, 错误: {e}")
         
         return errors
+
+    def _snapshot_mod_mutations(self, mod_info: ModInfo) -> dict:
+        """参数：mod_info(ModInfo)为待加载mod；返回：dict为快照；用途：加载失败时回滚本mod声明的全局注册。"""
+        missing_attr = object()
+        module_attrs = []
+        for script_config in mod_info.scripts:
+            for func_config in script_config.get("functions", []):
+                func_name = func_config.get("name", "")
+                func_type = func_config.get("type", "new")
+                if func_type == "replace":
+                    module_path = func_config.get("target_module", "").strip().replace(" ", "")
+                    attr_name = func_config.get("target_function", func_name).strip()
+                elif func_type == "new":
+                    module_path = func_config.get("register_to", "").strip().replace(" ", "")
+                    attr_name = func_name
+                    if not module_path:
+                        continue
+                else:
+                    continue
+                try:
+                    module = self._import_module(module_path)
+                except Exception:
+                    continue
+                old_attr = getattr(module, attr_name, missing_attr)
+                module_attrs.append((module, attr_name, old_attr, missing_attr))
+        return {
+            "original_functions": dict(_original_functions),
+            "mod_functions": dict(_mod_functions),
+            "mod_assets": dict(_mod_assets),
+            "module_attrs": module_attrs,
+        }
+
+    def _restore_mod_mutations(self, mutation_snapshot: dict) -> None:
+        """参数：mutation_snapshot(dict)为加载前快照；返回：None；用途：回滚失败mod留下的函数和素材注册。"""
+        _original_functions.clear()
+        _original_functions.update(mutation_snapshot["original_functions"])
+        _mod_functions.clear()
+        _mod_functions.update(mutation_snapshot["mod_functions"])
+        _mod_assets.clear()
+        _mod_assets.update(mutation_snapshot["mod_assets"])
+        for module, attr_name, old_attr, missing_attr in mutation_snapshot["module_attrs"]:
+            if old_attr is missing_attr:
+                try:
+                    delattr(module, attr_name)
+                except AttributeError:
+                    pass
+            else:
+                setattr(module, attr_name, old_attr)
     
     def _load_single_mod(self, mod_info:  ModInfo):
         """加载单个mod"""

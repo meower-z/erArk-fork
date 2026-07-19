@@ -1,0 +1,4 @@
+interface:
+  display_name: "Investigate Game Bug"
+  short_description: "Trace erArk bug clues to durable root-cause fixes"
+  default_prompt: "Use $investigate-game-bug to trace this report to its root cause and design a narrow preventive refactor."

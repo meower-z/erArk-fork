@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review erArk PR Artifacts"
+  short_description: "Audit erArk PR drafts and evidence for upstream visibility"
+  default_prompt: "Use $review-erark-pr-artifacts to audit this erArk PR draft and evidence against the actual proposed diff."

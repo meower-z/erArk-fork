@@ -1,0 +1,30 @@
+{
+    "mod_id": "local_group_edge_release_fix",
+    "name": "本地群交寸止释放修复",
+    "version": "1.0.0",
+    "author": "local",
+    "description": "在群交参与者离开、转单人H、无意识恢复或群交结束前释放待处理寸止计数。",
+    "game_version": "2026.05.22",
+    "dependencies": ["local_h_orgasm_batch_fix"],
+    "incompatible": [],
+    "load_priority": 10,
+    "scripts": [
+        {
+            "file": "scripts/local_group_edge_release_fix.py",
+            "functions": [
+                {
+                    "name": "patched_judge_character_tired_sleep",
+                    "type": "replace",
+                    "target_module": "Script.Design.handle_npc_ai",
+                    "target_function": "judge_character_tired_sleep"
+                },
+                {
+                    "name": "patched_recover_from_unconscious_h",
+                    "type": "replace",
+                    "target_module": "Script.Design.handle_npc_ai_in_h",
+                    "target_function": "recover_from_unconscious_h"
+                }
+            ]
+        }
+    ]
+}

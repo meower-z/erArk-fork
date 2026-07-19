@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sync VPS Git Local"
+  short_description: "Synchronize erArk across VPS, private Git, and local."
+  default_prompt: "Synchronize the current erArk branch across the VPS, private origin, and local worktree without losing unique or dirty work."

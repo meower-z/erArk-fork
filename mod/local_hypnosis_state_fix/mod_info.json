@@ -1,0 +1,17 @@
+{
+    "mod_id": "local_hypnosis_state_fix",
+    "name": "本地催眠状态修复",
+    "version": "1.0.0",
+    "author": "local",
+    "description": "修复催眠模式切换、单人催眠状态持久化，以及催眠态口上被无意识门禁过滤的问题。",
+    "game_version": "2026.05.22",
+    "dependencies": [],
+    "incompatible": [],
+    "load_priority": 10,
+    "scripts": [
+        {
+            "file": "scripts/local_hypnosis_state_fix.py",
+            "functions": []
+        }
+    ]
+}

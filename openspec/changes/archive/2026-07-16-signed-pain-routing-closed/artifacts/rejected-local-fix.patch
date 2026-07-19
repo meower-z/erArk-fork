@@ -1,0 +1,141 @@
+commit 767562b83cf05c288208034f39d281e1a3a4a2f2
+Author: meower-z <299913659+meower-z@users.noreply.github.com>
+Date:   Sun Jul 12 01:41:42 2026 +0000
+
+    fix: route signed pain conversion consistently
+
+diff --git a/Script/Settle/Second_effect.py b/Script/Settle/Second_effect.py
+index 8585933a9..1ddffef2e 100644
+--- a/Script/Settle/Second_effect.py
++++ b/Script/Settle/Second_effect.py
+@@ -8,7 +8,7 @@ from Script.Design import (
+ from Script.Core import cache_control, constant_effect, game_type, get_text
+ from Script.Config import normal_config
+ from Script.UI.Moudle import draw
+-from Script.Settle.common_default import base_chara_experience_common_settle, base_chara_hp_mp_common_settle, base_chara_state_common_settle
++from Script.Settle.common_default import base_chara_experience_common_settle, base_chara_hp_mp_common_settle, base_chara_state_common_settle, try_settle_pain_as_pleasure
+ 
+ 
+ _: FunctionType = get_text._
+@@ -1244,6 +1244,9 @@ def handle_add_small_pain(
+     now_add_lust += now_lust / 20
+     now_add_lust = int(now_add_lust)
+ 
++    if try_settle_pain_as_pleasure(character_id, now_add_lust, change_data):
++        return
++
+     character_data.status_data[17] += now_add_lust
+     character_data.status_data[17] = min(99999, character_data.status_data[17])
+     change_data.status_data.setdefault(17, 0)
+@@ -1836,6 +1839,9 @@ def handle_add_middle_pain(
+     now_add_lust += now_lust / 10
+     now_add_lust = int(now_add_lust)
+ 
++    if try_settle_pain_as_pleasure(character_id, now_add_lust, change_data):
++        return
++
+     character_data.status_data[17] += now_add_lust
+     character_data.status_data[17] = min(99999, character_data.status_data[17])
+     change_data.status_data.setdefault(17, 0)
+@@ -2621,6 +2627,9 @@ def handle_add_large_pain(
+     adjust = attr_calculation.get_mark_debuff_adjust(character_data.ability[15])
+     now_add_lust *= adjust
+ 
++    if try_settle_pain_as_pleasure(character_id, now_add_lust, change_data):
++        return
++
+     character_data.status_data[17] += now_add_lust
+     character_data.status_data[17] = min(99999, character_data.status_data[17])
+     change_data.status_data.setdefault(17, 0)
+@@ -3194,18 +3203,23 @@ def handle_extra_orgasm(
+         adjust = attr_calculation.get_mark_debuff_adjust(character_data.ability[17])
+         extra_terror *= adjust
+         extra_terror = int(extra_terror)
+-        # 结算苦痛和恐怖
+-        character_data.status_data[17] += extra_pain
+-        character_data.status_data[17] = min(99999, character_data.status_data[17])
+-        change_data.status_data.setdefault(17, 0)
+-        change_data.status_data[17] += extra_pain
++        # 结算苦痛快感化和恐怖
++        pain_as_pleasure_flag = try_settle_pain_as_pleasure(character_id, extra_pain, change_data)
++        if not pain_as_pleasure_flag:
++            character_data.status_data[17] += extra_pain
++            character_data.status_data[17] = min(99999, character_data.status_data[17])
++            change_data.status_data.setdefault(17, 0)
++            change_data.status_data[17] += extra_pain
+         character_data.status_data[18] += extra_terror
+         character_data.status_data[18] = min(99999, character_data.status_data[18])
+         change_data.status_data.setdefault(18, 0)
+         change_data.status_data[18] += extra_terror
+         # 绘制信息
+         now_draw = draw.NormalDraw()
+-        now_text = _("\n{0}因为第{1}次的连续额外绝顶而被迫感受到了更多的苦痛和恐怖\n").format(character_data.name, all_extra_count)
++        if pain_as_pleasure_flag:
++            now_text = _("\n{0}因为第{1}次的连续额外绝顶而被迫感受到了更多的心理快感和恐怖\n").format(character_data.name, all_extra_count)
++        else:
++            now_text = _("\n{0}因为第{1}次的连续额外绝顶而被迫感受到了更多的苦痛和恐怖\n").format(character_data.name, all_extra_count)
+         now_draw.text = now_text
+         now_draw.width = window_width
+         now_draw.draw()
+@@ -3810,4 +3824,3 @@ def handle_add_1_h_experience(
+     change_data -- 状态变更信息记录对象
+     """
+     base_chara_experience_common_settle(character_id, 155, 1, change_data=change_data)
+-
+diff --git a/Script/Settle/common_default.py b/Script/Settle/common_default.py
+index f917fa522..70d8933be 100644
+--- a/Script/Settle/common_default.py
++++ b/Script/Settle/common_default.py
+@@ -24,6 +24,40 @@ cache: game_type.Cache = cache_control.cache
+ width = normal_config.config_normal.text_width
+ """ 屏幕宽度 """
+ 
++
++def try_settle_pain_as_pleasure(
++        character_id: int,
++        pain_value: float,
++        change_data: Optional[Union[game_type.CharacterStatusChange, game_type.TargetChange]] = None,
++        change_data_to_target_change: Optional[game_type.CharacterStatusChange] = None,
++        ) -> bool:
++    """
++    尝试将正向苦痛值交给心理快感通用结算
++    Keyword arguments:
++    character_id -- 角色id
++    pain_value -- 已完成苦痛来源自身修正的有符号最终值
++    change_data -- 结算信息记录对象
++    change_data_to_target_change -- 交互对象的结算信息记录对象
++    Return arguments:
++    bool -- 是否由苦痛快感化路径接管本次苦痛结算
++    """
++    if pain_value <= 0 or not handle_premise.handle_hypnosis_pain_as_pleasure(character_id):
++        return False
++
++    character_data: game_type.Character = cache.character_data[character_id]
++    base_chara_state_common_settle(
++        character_id,
++        pain_value,
++        23,
++        0,
++        ability_level = character_data.ability[36],
++        tenths_add = False,
++        change_data = change_data,
++        change_data_to_target_change = change_data_to_target_change,
++    )
++    return True
++
++
+ def base_chara_hp_mp_common_settle(
+         character_id: int,
+         add_time: int = 0,
+@@ -239,9 +273,8 @@ def base_chara_state_common_settle(
+         final_value += tenths_value
+     final_value = int(final_value)
+ 
+-    # 心控-苦痛快感化，将苦痛状态转化为快感状态
+-    if state_id == 17 and handle_premise.handle_hypnosis_pain_as_pleasure(character_id):
+-        base_chara_state_common_settle(character_id, final_value, 23, 0, ability_level = character_data.ability[36], tenths_add = False, change_data = change_data, change_data_to_target_change = change_data_to_target_change)
++    # 心控-苦痛快感化，将正向苦痛状态转化为快感状态
++    if state_id == 17 and try_settle_pain_as_pleasure(character_id, final_value, change_data, change_data_to_target_change):
+         return
+ 
+     # 结算最终值

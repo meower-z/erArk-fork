@@ -1,4 +1,14 @@
 {
-  "enabled_mods": [],
-  "load_order": []
+  "enabled_mods": [
+    "easy_mode",
+    "group_sex_extension",
+    "local_fontfix",
+    "local_orgasm_chain_gate_fix"
+  ],
+  "load_order": [
+    "easy_mode",
+    "group_sex_extension",
+    "local_fontfix",
+    "local_orgasm_chain_gate_fix"
+  ]
 }
