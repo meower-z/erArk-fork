@@ -296,6 +296,14 @@ textbox = Text(
     highlightbackground=normal_config.config_normal.background,
     bd=0,
     cursor="arrow",
+    # 显示区并非可编辑控件：insertwidth=0 去掉文本插入符（光标竖条）。
+    # 否则点击按钮瞬间 Text 类绑定会短暂把焦点给 textbox 并在点击处放置插入符，
+    # 随后 focus_cmd 又把焦点抢到输入框，插入符一闪即逝；黑色插入符在黑底上不可见，
+    # 但落在悬停高亮（on_style 亮底）的按钮上时会显出黑色竖条，即“点击一刹那的 I 字光标”。
+    insertwidth=0,
+    # 选区背景与正文背景同色：正文嵌有透明 PNG（立绘、状态条小图），拖选/双击建立的
+    # 选区若用醒目色，会从透明像素处透出（露红底）。同色后选区不可见、拖选复制仍可用。
+    selectbackground=normal_config.config_normal.background,
     #123分别是，\n的上行间距，自动换行行间距，\n的下行间距
     spacing1 = 1,
     spacing2 = 1,
@@ -574,7 +582,8 @@ def set_background(color):
     color -- 背景颜色
     """
     textbox.config(insertbackground=color)
-    textbox.configure(background=color, selectbackground="red")
+    # selectbackground 跟随背景色，避免选区红底从正文透明 PNG 处透出（见 textbox 创建处说明）
+    textbox.configure(background=color, selectbackground=color)
 
 
 # ######################################################################
