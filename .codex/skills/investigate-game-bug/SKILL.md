@@ -25,7 +25,7 @@ Preserve the project's normal code style when comparing candidates. Do not add, 
 
 ## Establish The Investigation Boundary
 
-1. Read the named handoff, OpenSpec change, mod README, and actual implementation before forming a theory.
+1. Read the named handoff, the owning `.scratch/` ticket/spec, mod README, and actual implementation before forming a theory.
 2. Check the current branch, dirty files, worktrees, and active related tasks. Do not overlap a fix or PR already owned elsewhere.
 3. Inventory active upstream PRs that replace an in-scope mod responsibility. For an assumed-upstream development baseline, record each exact PR commit, apply it to core first, and disable the matching mod responsibility so a wrapper cannot hide whether the core fix works.
 4. Record the exact source revision, enabled mods, renderer, save or fixture, and player-visible symptom.
@@ -33,9 +33,9 @@ Preserve the project's normal code style when comparing candidates. Do not add, 
 
 ## Isolate Every Upstream Candidate
 
-Prepare each upstream candidate in a new linked worktree owned by the main erArk repository. Fetch current `upstream/master`, create one `codex/<candidate>` branch from that ref, and use `git worktree add`; do not create another independent clone. Keep unrelated candidates, local integration commits, and central OpenSpec edits out of that worktree.
+Prepare each upstream candidate in a new linked worktree owned by the main erArk repository. Fetch current `upstream/master`, create one `codex/<candidate>` branch from that ref, and use `git worktree add`; do not create another independent clone. Keep unrelated candidates, local integration commits, and central knowledge-base edits (`.scratch/`, `CONTEXT.md`, `docs/adr/`) out of that worktree.
 
-The candidate worktree may contain only the intended public source/tests plus local untracked evidence needed to reproduce it. OpenSpec artifacts and project-local skills under `.codex/skills/` are shared coordination state: edit them only in the main worktree on branch `main`, never from a candidate worktree, and serialize those edits so only one session writes them at a time. Store authoritative task status there. Never push, publish screenshots, or create/edit a GitHub PR without the user's separate authorization.
+The candidate worktree may contain only the intended public source/tests plus local untracked evidence needed to reproduce it. Knowledge-base artifacts (`.scratch/` tickets, `CONTEXT.md`, `docs/adr/`) and project-local skills under `.codex/skills/` are shared coordination state: edit them only in the main worktree on branch `main`, never from a candidate worktree, and serialize those edits so only one session writes them at a time. Store authoritative task status there. Never push, publish screenshots, or create/edit a GitHub PR without the user's separate authorization.
 
 ## Build A Red-Capable Reproduction
 
@@ -109,7 +109,7 @@ claude -p --model claude-fable-5 --effort high --no-session-persistence "<prompt
 - Whether player-visible evidence is strong enough to convince a human reviewer that a behavior is a real bug worth fixing. If Fable judges evidence weak, it names the next evidence question or route; continue working — weak evidence is not a stop.
 - Classification of locally patched behavior as bug fix vs. game-experience enhancement, proposal of fixes the user did not name, and PR task boundaries and priority — only when concrete evidence shows an effect on normal gameplay.
 - Provisional gameplay semantics: Fable may pick the most likely reasonable semantics and authorize completing a local candidate under that choice. The user still gives final semantic confirmation before any upstream PR submission.
-- Acceptance of all program documentation: task maps, evidence assessments, OpenSpec problem/design/task records, PR-task boundaries. A document is not accepted until Fable passes it.
+- Acceptance of all program documentation: task maps, evidence assessments, ticket problem/design/task records, PR-task boundaries. A document is not accepted until Fable passes it.
 
 **Disagreement.** If Codex disagrees with a Fable verdict, send exactly one follow-up containing the counterargument and its supporting evidence. Fable's answer to that follow-up is final for reversible design and workflow decisions. Facts are never subject to this vote.
 
@@ -129,7 +129,7 @@ After the reproduction and cause investigation, stop before changing production 
 4. sibling paths the chosen boundary should repair, inverse behavior it must preserve, and explicit non-goals;
 5. why the chosen boundary is the lowest-penalty candidate that is logically correct and correctly scoped, or why a user-requested refactor is appropriate.
 
-For a non-trivial fix, give the reproduction, production trace, and design record to a fresh-context critic before implementing. Ask whether the chosen boundary is logically correct and correctly scoped, whether a correct candidate with a lower `(a + b) + S - 2U` penalty exists, and whether the fix changes public game semantics. Resolve actionable objections first. Production edits may begin only after the central OpenSpec records the chosen boundary and unresolved semantic choices are either answered or declared blockers.
+For a non-trivial fix, give the reproduction, production trace, and design record to a fresh-context critic before implementing. Ask whether the chosen boundary is logically correct and correctly scoped, whether a correct candidate with a lower `(a + b) + S - 2U` penalty exists, and whether the fix changes public game semantics. Resolve actionable objections first. Production edits may begin only after the owning `.scratch/` ticket records the chosen boundary and unresolved semantic choices are either answered or declared blockers.
 
 Reject a design whose contract is merely “the observed output changes from bad to good.” The accepted contract must name the violated rule, state where the fix enforces it, and explain why the same mechanism cannot produce the nearby failures found during investigation. Among designs that meet this contract, choose the one with the lowest `(a + b) + S - 2U` penalty; testing, evidence, and root-cause requirements are unchanged.
 

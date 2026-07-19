@@ -1,8 +1,0 @@
-2026-07-13 resume1 (DISPLAY=:1, window 4194341)
-- Resumed baseline at wait2 result page (26-wait2-p2.png).
-- Completed wait2 with two visually verified Return advances; returned to the instruction panel.
-- Entered and completed [6001] waits 3, 4, 5, and 6, one typed command / Return / result-page advance at a time.
-- After wait6, returned to the instruction panel and scrolled Tk history one wheel step per inspected frame.
-- Visible baseline edge lines in the relevant history cluster are two `成功寸止了清流的绝顶` and two `成功寸止了特蕾西娅的绝顶`, directly demonstrating duplicate shared settlement.
-- Promoted resume1/100-down16.png to baseline/final.png and created `baseline.done` after root accepted this clearer representative case.
-- Runner switched to candidate. Candidate is currently at the title / load menu; inspected frame: candidate/resume1/01-current.png. No candidate interaction has been performed yet.

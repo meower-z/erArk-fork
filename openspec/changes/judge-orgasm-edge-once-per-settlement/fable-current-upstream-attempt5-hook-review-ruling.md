@@ -1,7 +1,0 @@
-`REVISE` — 三个 wrapper 保留（我核实了当前上游 `72e28051e` 的全部调用点：`orgasm_settle` 只经 `second_behavior.orgasm_settle` 属性调用（`Script/Settle/default.py:6678,6710`）或本模块全局名调用（`second_behavior.py:364,368`），`search_target` 全部调用都在 `handle_npc_ai.py` 内经模块全局名，`init_character_behavior` 只经 `update.py:24` 属性调用——没有任何 `from X import` 早绑定，import 完成后 setattr 重绑不会被绕过、也不会双重生效），但按提议原样运行还不够，必须先做两处修正：
-
-**1. 必须替换 `init_character_behavior` wrapper 的边界语义：只在最外层进入时标记等待边界。** 当前上游 `update.py:13-28` 明确允许 `game_update_flow` 嵌套到深度 2，即 `init_character_behavior` 可被嵌套进入。按提议的"每次调用标记一次边界"会在嵌套时多标边界，把高潮事件错归到不存在的等待，诊断 A 的逐次归因直接作废。wrapper 须只读检查 `cache_control.cache.game_update_flow_running`（或自持深度计数），仅深度 0→1 的进入算一次等待边界。
-
-**2. 必须增加一项不扰动自校验：六次等待后的全分辨率帧逐一与 attempt4 已记录的哈希 `00f5d13c45e2fd43a8a9612dbaa9c70e0de06abf1800cf0ca3acf495708bc2e5` 比对，任一不匹配即整轮诊断数据作废。** RNG state 相等只证明 wrapper 没消耗随机数，不证明没有行为影响（意外的共享 dict 变异、异常吞没、调用次序改变都不过 RNG 这道闸）。attempt4 已证明同 save99、seed0、`PYTHONHASHSEED=0`、同 38 次物理输入下六帧字节相同——这给了一个免费且更强的等价判据：带 wrapper 的运行若六帧仍字节等于该哈希，则包装对玩家可见行为零扰动，且诊断数据描述的正是 attempt4 那次未解释的运行；若不等，数据描述的是另一次运行，无论 RNG 检查多干净都不可用。此检查要求复用 attempt4 的 display 几何与 known-good profile，帧本来就要采集，成本为零。
-
-运行合同的其余部分照提议冻结即可：wrapper 以 `*args/**kwargs` 原样转发、只做 int→int 字典的浅拷贝（`orgasm_settle` 的可变默认参数只读不写，拷贝不回传）；`search_target` 只在 `601 in target_list` 时抄 `premise_data` 中 `config_target_premise_data[601]` 已有的条目（短路时首个失败前提本身会以 0 落在 `premise_data` 里，抄写足以定位阻塞前提，无需补算）；日志先积内存、在等待边界统一落盘，避免结算路径内插入 I/O；产物按既定归档为诊断材料，不作 PR 证据。

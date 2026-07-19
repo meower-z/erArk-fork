@@ -1,6 +1,6 @@
 ---
 name: rebase-fork-to-upstream
-description: Rebuild the erArk working tree onto the latest upstream plus every currently-open proposed PR, keeping all local non-code (docs, openspec knowledge, .codex, personal mods), and reconciling each local bugfix-mod against its PR status. Use only when the user explicitly asks to rebase, resync, or reset the fork to upstream + open PRs.
+description: Rebuild the erArk working tree onto the latest upstream plus every currently-open proposed PR, keeping all local non-code (docs, knowledge base, .codex, personal mods), and reconciling each local bugfix-mod against its PR status. Use only when the user explicitly asks to rebase, resync, or reset the fork to upstream + open PRs.
 ---
 
 # Rebase fork to upstream + open PRs
@@ -17,7 +17,8 @@ PR) now covers.
   as a PR to upstream; personal mods (`easy_mode`, `local_fontfix`, `local_performance`,
   `group_sex_extension`) never were. `mod/semen_boost` and an empty `mod/mod_config.json` are
   upstream's own.
-- OpenSpec (`openspec/`) is the local knowledge base tracking each fix and PR outcome.
+- `CONTEXT.md` + `docs/adr/` (domain knowledge) and `.scratch/` (local tickets/specs, see
+  `docs/agents/issue-tracker.md`) are the local knowledge base tracking each fix and PR outcome.
   `mod/LOCAL_BUGFIX_MIGRATION.md` is the hand-maintained mod↔PR table — treat it as a lead, not
   ground truth; it drifts.
 - Goal: **code** follows `upstream/master` + open PRs; **everything else local is kept**.
@@ -33,8 +34,8 @@ PR) now covers.
 
 ### 1. Fetch and classify PRs
 - `git fetch upstream` (and `git fetch origin`).
-- Enumerate the fork author's PRs on upstream (numbers appear in `mod/LOCAL_BUGFIX_MIGRATION.md`
-  and `openspec/`; sweep a range if unsure). For each, record from the public API:
+- Enumerate the fork author's PRs on upstream (numbers appear in `mod/LOCAL_BUGFIX_MIGRATION.md`,
+  `.scratch/`, and `docs/adr/`; sweep a range if unsure). For each, record from the public API:
   - **merged** (`state=closed, merged=true`) — fix is now in `upstream/master`.
   - **rejected** (`state=closed, merged=false`) — fix is NOT in upstream (unless re-done there later).
   - **open** (`state=open`) — still proposed; fetch its head:
@@ -42,7 +43,7 @@ PR) now covers.
 
 ### 2. Classify each local mod (fan out — one analysis agent per fix-mod)
 For each `mod/<name>` fix-mod, an agent reads `mod_info.json` + `README.md` + `scripts/*.py`,
-finds its PR number(s) via the migration table and `openspec/`, and — crucially — checks whether
+finds its PR number(s) via the migration table and `.scratch/`/`docs/adr/`, and — crucially — checks whether
 the fix **is already present in `upstream/master`** by reading the patched upstream function
 (`git show upstream/master:<path>`) and comparing behavior. Output per mod: `mapped_prs`,
 `covered_by_upstream` (yes/partial/no), `disposition`, evidence.
@@ -71,11 +72,11 @@ the maintainer deliberately disabled without confirming — surface those and as
   comm -13 <(git ls-tree -r --name-only upstream/master | sort) \
            <(git ls-tree -r --name-only main | sort)
   ```
-  This is `openspec/`, `.codex/`, `.claude/` additions, `AGENTS.md`, local `mod/` subdirs, local
+  This is `CONTEXT.md`, `docs/`, `.scratch/`, `.codex/`, `.claude/` additions, `AGENTS.md`, local `mod/` subdirs, local
   `.github/skills` additions, `mod/LOCAL_BUGFIX_MIGRATION.md`, etc.
 - **Sanity check** there is no *other* local edit to a shared file that a reset would drop:
   `git log --oneline upstream/master..main -- Script/ data/ ':(exclude)Script/Core/mod_manager.py'`
-  — every commit listed must be a PR head/merge or an openspec doc, never stray local authorship.
+  — every commit listed must be a PR head/merge or a knowledge-base doc, never stray local authorship.
   Investigate anything else before proceeding.
 
 ### 4. Build the target tree (in an isolated worktree)
@@ -97,7 +98,8 @@ if messy, stop and report rather than guess.
   Add newly-kept-and-enabled mods per step 2 (respecting the deliberate-disable exception).
 - `mod/LOCAL_BUGFIX_MIGRATION.md`: move newly-merged/covered PRs to the merged section, drop the
   deleted mods, update the open-PR list.
-- `openspec/`: archive knowledge for PRs that closed (merged or rejected) since last run.
+- Knowledge base: record outcomes for PRs that closed (merged or rejected) since last run — close the
+  matching `.scratch/` ticket and, if a durable decision changed, update `CONTEXT.md`/`docs/adr/`.
 
 ### 6. Adopt and verify
 - Commit the target tree on a temp branch, then adopt per the user's choice:

@@ -1,22 +1,22 @@
 ---
 name: wrap-up-session
-description: End-of-session cleanup for erArk. Use when the user says to "wrap up a session" (or wrap up / 收尾 the session). Commits this session's pending skill and openspec updates to local `main`, pushes `main` to `origin/main`, removes this session's temporary worktree, and cleans up only this session's orphaned processes.
+description: End-of-session cleanup for erArk. Use when the user says to "wrap up a session" (or wrap up / 收尾 the session). Commits this session's pending skill and docs updates to local `main`, pushes `main` to `origin/main`, removes this session's temporary worktree, and cleans up only this session's orphaned processes.
 ---
 
 # Wrap Up Session
 
 When the user asks to wrap up a session, perform the steps below in order. This machine is shared: the user's Windows machine pushes directly into this checkout (`receive.denyCurrentBranch=updateInstead`) and other Claude/codex sessions run concurrently with their own worktrees and Tk/Xvfb processes. Every step that commits, pushes, removes a worktree, or kills a process must first distinguish THIS session's artifacts from other sessions' and from the user's own commits. Never touch another session's worktree, processes, or uncommitted work.
 
-## 1. Commit skill + openspec updates to local `main`
+## 1. Commit skill + docs updates to local `main`
 
 - Confirm you are on `main` in the main worktree (`/home/ubuntu/games/erArk`), not a linked worktree.
-- `main` HEAD may have advanced during the session (Windows pushes; other sessions commit skill/openspec docs). Run `git log` and `git status` first — much of your work may already be committed. If a file you edited shows no diff against HEAD, verify the committed content actually contains your final edits (`git show HEAD:<path> | grep <marker>`) before assuming it is yours and current.
-- Stage ONLY skill and openspec changes that are yours this session:
+- `main` HEAD may have advanced during the session (Windows pushes; other sessions commit skill/docs updates). Run `git log` and `git status` first — much of your work may already be committed. If a file you edited shows no diff against HEAD, verify the committed content actually contains your final edits (`git show HEAD:<path> | grep <marker>`) before assuming it is yours and current.
+- Stage ONLY skill and docs changes that are yours this session:
   - `.codex/skills/**` (this is the tracked, canonical copy; `.claude/skills/**` is an untracked local mirror — keep both identical, but only `.codex/skills` is committed).
-  - `openspec/changes/**` and `openspec/specs/**` you changed.
+  - `CONTEXT.md`, `docs/adr/**`, `docs/agents/**`, and `.scratch/**` files you changed (the local issue tracker and domain docs; see `docs/agents/issue-tracker.md`).
   - agent definitions under `.codex/agents/**` you added.
 - Do NOT stage, and restore with `git checkout -- <path>` if you dirtied them: `.codex-evidence/`, `.venv/`, `save/`, `save.bak/`, `note_for_codex`, generated `data/*.json`, `Script/Config/config_def.py`, `data/po/**` (buildconfig/buildpo noise), runtime `config.ini` and `mod/mod_config.json` (skip-worktree local config). If you set `config.ini web_draw=0` for Tk evidence, restore it to `1`.
-- Leave other sessions' pending openspec edits untouched. Commit surgically (one logical change) with identity `meower-z <299913659+meower-z@users.noreply.github.com>` and a `docs(...)`-style message.
+- Leave other sessions' pending docs/ticket edits untouched. Commit surgically (one logical change) with identity `meower-z <299913659+meower-z@users.noreply.github.com>` and a `docs(...)`-style message.
 
 ## 2. Push `main` to `origin/main`
 

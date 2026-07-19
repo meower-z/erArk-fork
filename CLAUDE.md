@@ -372,3 +372,17 @@ The `.github/prompts/数据处理工作流` directory contains 60 detailed docum
 1. **Browse by Category**: Select the appropriate category based on the system type you're working on
 2. **System Dependencies**: Many systems are interconnected - refer to related system documentation
 3. **Document Structure**: Each document typically contains system overview, core components, data structures, workflow explanations, configuration details, technical implementation, and extension guides
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as local markdown files under `.scratch/<feature-slug>/` (never upstream GitHub issues). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary (`needs-triage` … `wontfix`), recorded as `Status:` lines in issue files. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at repo root + `docs/adr/`; upstream system docs stay in `.github/prompts/数据处理工作流/`. See `docs/agents/domain.md`.

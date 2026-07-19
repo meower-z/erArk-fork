@@ -5,7 +5,7 @@ description: Audit erArk upstream PR drafts and PR-facing evidence against the a
 
 # Review erArk PR Artifacts
 
-Act as a clean-context upstream reviewer. The proposed diff is the boundary of what the PR can claim. A local test, probe, screenshot, benchmark, OpenSpec note, agent review, or worktree fact is not PR-visible merely because it helped the investigation.
+Act as a clean-context upstream reviewer. The proposed diff is the boundary of what the PR can claim. A local test, probe, screenshot, benchmark, local ticket note, agent review, or worktree fact is not PR-visible merely because it helped the investigation.
 
 Read `.codex/skills/investigate-game-bug/SKILL.md`, especially `Write The Upstream PR Draft`, before reviewing. Its writing rules remain authoritative; this skill supplies the verification procedure.
 
@@ -28,7 +28,7 @@ Inspect `git diff --name-status <base>...<head>` and classify every claimed proo
 - **PR-submitted automated proof:** its test or benchmark logic and required fixtures are present in the proposed diff.
 - **PR-visible external evidence:** an approved artifact that is already attached or linked in the PR draft.
 - **Pending-publication visual evidence:** an inspected local image or recording intended for the PR but not uploaded because publication still awaits user authorization.
-- **Local-only:** absent test files, temporary probes, `/tmp` output, local worktree paths, unpublished commits or branches, OpenSpec notes, agent reviews, private benchmarks, and screenshots that will not be published.
+- **Local-only:** absent test files, temporary probes, `/tmp` output, local worktree paths, unpublished commits or branches, local ticket/ADR notes, agent reviews, private benchmarks, and screenshots that will not be published.
 
 For every command, count, screenshot, and behavioral assertion in the draft or evidence, record which ledger entry supports it. Unsupported items fail the review.
 
@@ -61,7 +61,7 @@ Apply every rule below:
 1. The title and body are Chinese unless the user requested another language.
 2. The body explains the user-visible problem, confirmed cause, and final fix in that order.
 3. Every sentence is understandable from the upstream base, proposed diff, PR-visible evidence, and any inspected pending-publication visual evidence available at that point in the text.
-4. Remove rejected designs, private deliberation, local branch/worktree details, agent activity, OpenSpec state, and file-by-file narration already visible in the diff.
+4. Remove rejected designs, private deliberation, local branch/worktree details, agent activity, local ticket state, and file-by-file narration already visible in the diff.
 5. Do not add a `修改范围` section that restates the diff.
 6. Do not add standalone `不包含`, `非目标`, or similar inventories. Keep only a boundary required to make an adjacent behavioral claim accurate.
 7. An automated test or benchmark may be named, counted, or quoted only when its test logic and required fixtures are in the proposed diff. Existing upstream tests and local tests are not exceptions. If the proof is absent from the diff, remove its name, command, count, result, and conclusions that rely solely on it from both draft and PR-facing evidence.

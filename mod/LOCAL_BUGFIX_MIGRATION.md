@@ -29,12 +29,15 @@ mod `local_orgasm_chain_gate_fix` 承接（见下）。
 启用会回退 #232/#233 的修改**。
 
 `local_group_masturbation_intent_fix` 已于 2026-07-18 撤下删除（再审计认定普通玩法不可达，
-见 openspec 记录）。
+记录见 git 历史中的 openspec 归档）。
 
-## 已被上游覆盖、组件已删除
+## 已被上游覆盖、组件已删除或禁用
 
-下列 PR 的修复已在 `upstream/master` 中，对应本地组件已删除（不再保留回退副本，核心行为
-由上游代码及回归测试负责）。
+下列 PR 的修复已在 `upstream/master` 中，核心行为由上游代码及回归测试负责。表中"已删除"
+的组件里，`local_orgasm_settle_edge_fix`、`local_group_participant_admission_fix`、
+`local_pain_as_pleasure_fix`、`local_h_orgasm_batch_fix`、`local_h_movement_interrupt_fix`
+实际仍保留在盘上（2026-07-19 恢复本地基础设施时带回），但均未启用——`mod_config.json` 的
+当前启用清单才是运行时事实。重新启用任何一个前必须先核对其包装的上游函数是否已变化。
 
 | PR | 状态 | Core 责任 | 本地组件处理 |
 | --- | --- | --- | --- |
@@ -60,7 +63,7 @@ mod `local_orgasm_chain_gate_fix` 承接（见下）。
 | 232 | 已合并 | 切换催眠模式后立即对当前目标套用催眠状态 | `local_hypnosis_state_fix` 缺陷 1 职责由上游承接，mod 保持禁用 |
 | 212 | 已关闭（未合并） | 苦痛快感化只转换正向苦痛、直接苦痛二段转换 | 行为已由上游 `common_default.py`（`final_value > 0` 门禁）与二段结算统一改造覆盖；`local_pain_as_pleasure_fix` 已删除 |
 
-| 222 | 已关闭（未合并） | 异地干员的 H 结算文本泄漏给玩家 | 上游 `97c35826e` 改为异地一律走 must-show/must-settle 通道，泄漏绘制效果 404–408 均非 must-settle，已验证覆盖；`local_h_orgasm_batch_fix` 已删除。详见 openspec 归档 2026-07-17-remote-display-leaks-closed |
+| 222 | 已关闭（未合并） | 异地干员的 H 结算文本泄漏给玩家 | 上游 `97c35826e` 改为异地一律走 must-show/must-settle 通道，泄漏绘制效果 404–408 均非 must-settle，已验证覆盖；`local_h_orgasm_batch_fix` 已删除。详见 git 历史中的 openspec 归档 2026-07-17-remote-display-leaks-closed |
 
 PR 212、222 虽被上游关闭而非合并，但同一行为均已由维护者直接在上游修复，因此其组件无保留必要。
 
