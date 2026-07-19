@@ -327,9 +327,12 @@ def handle_scene_someone_h_but_not_hidden_sex(character_id: int) -> int:
     """
     from Script.Design.handle_premise import handle_hidden_sex_mode_0
     character_list = map_handle.get_chara_now_scene_all_chara_id_list(character_id)
-    # 场景角色数大于2时进行检测，不再排除自己的跟随和H状态
-    # if len(scene_data.character_list) > 2 and not (character_data.sp_flag.is_follow or character_data.sp_flag.is_h):
+    # 场景角色数大于2时进行检测
     if len(character_list) <= 2:
+        return 0
+    # 自己已经在H中（如群交参与者）时，不作为“目击者”触发本前提，
+    # 否则会对自己正在参与的H/群交反复触发“H中被发现”面板
+    if cache.character_data[character_id].sp_flag.is_h:
         return 0
     # 遍历当前角色列表
     for chara_id in character_list:
