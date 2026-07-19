@@ -15,6 +15,7 @@
 - **点击级释放门(per-click orgasm chain gate)**:同一玩家动作窗口内,已**实际高潮释放**的 NPC 不再生成新的自主行为(普通空闲 AI 与群交 type-1/type-2 入口都拒绝),但被动结算、二段效果、循环完成不受影响;下一次点击重置。成功寸止、时停蓄积、玩家自身高潮不登记。实现:`mod/local_orgasm_chain_gate_fix`(上游拒收后落地为 mod,见 [ADR-0002](docs/adr/0002-orgasm-chain-gate-as-local-mod.md))。
 - **窗口末寸止判定(window-end edge judgment)**:寸止(edge)跨级在窗口内静默累计进 `orgasm_edge_count`,窗口结束时每角色至多掷一次成败;失败则当场把全部累计转普通高潮结算。禁用组件 `local_orgasm_settle_edge_fix` 曾以替换 `init_character_behavior` 实现。
 - **高潮批(orgasm batch)**:一次结算里同一角色的全部高潮事件视为一个原子批——**效果全结算、显示只取代表**(每部位只显示最强;代表部位 ≤3,其余按强度分组汇总一行;人力发电——罗德岛动力系统的发电量——提示聚合为一条)。力竭中断必须排在批完成之后。载体组件 `local_h_orgasm_batch_fix` 当前禁用,重新启用前见 [ADR-0003](docs/adr/0003-orgasm-batch-effect-display-separation.md) 的维护注意项。
+- **无精液高潮(no-semen climax)**:玩家射精槽达到高潮阈值,但基础精液与临时精液合计不超过 2 ml 时发生的高潮。它属于高潮但不属于射精:结束忍耐并清空射精槽,但不产生射精选择、射精统计、精液污浊、射精位置、受孕效果或射精口上。
 - **完全催眠(complete hypnosis)**:素质 73 存在或催眠度 ≥200;群交催眠增强的门槛是 ≥2 名完全催眠参与者,**不**额外要求 `unconscious_h` 激活。
 - **群交上下文参与者(group context participants)**:群交模板成员 + 当前场景 H 状态角色的统一资格集合;不同准入路径(发起 H / 被邀请加入)按同一条 eligibility 规则计数,不区别对待。
 - **目击者已处理标记**:`sp_flag.see_pl_h` 表示该角色已对玩家当前地点的隐奸/群交完成过发现处理;玩家移动前不再重复入选发现者,移动重置后恢复资格。
