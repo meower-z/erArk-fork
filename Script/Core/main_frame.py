@@ -295,7 +295,7 @@ textbox = Text(
     height=normal_config.config_normal.textbox_hight,
     highlightbackground=normal_config.config_normal.background,
     bd=0,
-    cursor="",
+    cursor="arrow",
     #123分别是，\n的上行间距，自动换行行间距，\n的下行间距
     spacing1 = 1,
     spacing2 = 1,
@@ -825,7 +825,7 @@ def io_print_cmd(
         global send_order_state
         send_order_state = True
         order.set(cmd_number)
-        textbox.configure(cursor="")
+        textbox.configure(cursor="arrow")
         _hide_tooltip()
         send_input(order)
 
@@ -859,7 +859,7 @@ def io_print_cmd(
             textbox.tag_ranges(cmd_tag_name)[0],
             textbox.tag_ranges(cmd_tag_name)[1],
         )
-        textbox.configure(cursor="")
+        textbox.configure(cursor="arrow")
         _hide_tooltip()
 
     def motion_func(event=None):
@@ -897,7 +897,7 @@ def io_print_image_cmd(cmd_str: str, cmd_number: int, tooltip: str = ""):
         global send_order_state
         send_order_state = True
         order.set(cmd_number)
-        textbox.configure(cursor="")
+        textbox.configure(cursor="arrow")
         _hide_tooltip()
         send_input(order)
 
