@@ -276,3 +276,5 @@ Leave a concise root-cause record containing:
 - runtime gaps and coordination exclusions.
 
 Do not propose a public PR until this record supports a narrow, independently testable behavioral contract.
+
+When a verified fix (or a disproven assumption) reveals durable mechanism knowledge — an invariant, a cross-module contract, a state-lifecycle rule — fold it into the project wiki with `/project-wiki`: rewrite the affected `docs/wiki/` pages to describe the new HEAD, and link the fix commit/PR as provenance. ADRs record the why of a decision; the wiki records what is now true. A wiki page left contradicting the landed fix is a defect of the investigation's own close-out.

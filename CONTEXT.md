@@ -1,6 +1,6 @@
 # CONTEXT.md — 本地 fork 领域词汇与机制
 
-本仓库是 `erArk/erArk` 的 fork。上游系统文档在 `.github/prompts/数据处理工作流/`;本文件只覆盖**本地 fork 自己的**词汇、机制和现状(含已被上游吸收的本地决策,注明"现由上游提供")。决策记录在 `docs/adr/`。各条目提到的 openspec 规格原文已随 openspec 工作流废弃删除,可在 git 历史的 `openspec/specs/` 下找回。
+本仓库是 `erArk/erArk` 的 fork。上游系统文档在 `.github/prompts/数据处理工作流/`;本文件只覆盖**本地 fork 自己的**词汇、机制和现状(含已被上游吸收的本地决策,注明"现由上游提供")。决策记录在 `docs/adr/`;机制快照(跨模块契约、不变量、坑)在项目 wiki,入口 [docs/wiki/INDEX.md](docs/wiki/INDEX.md)——本文件是词汇表(术语定义),wiki 是机制细节,别混。各条目提到的 openspec 规格原文已随 openspec 工作流废弃删除,可在 git 历史的 `openspec/specs/` 下找回。
 
 ## 本地开发模式
 

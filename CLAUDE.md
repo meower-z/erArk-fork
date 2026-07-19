@@ -386,3 +386,7 @@ Default five-role vocabulary (`needs-triage` … `wontfix`), recorded as `Status
 ### Domain docs
 
 Single-context: `CONTEXT.md` at repo root + `docs/adr/`; upstream system docs stay in `.github/prompts/数据处理工作流/`. See `docs/agents/domain.md`.
+
+### Project wiki
+
+`docs/wiki/` holds the snapshot record of fork-local mechanism knowledge (`docs/wiki/INDEX.md` is the entry point). Two triggers to run `/project-wiki`: (1) a change lands (implementation done / PR merged) — fold: rewrite every page whose facts it touched, as if the new state had always been true; (2) durable knowledge surfaces mid-task (an invariant, a cross-module contract, a gotcha). A page that contradicts HEAD is worse than no page — fix or delete it in the same commit as the change.

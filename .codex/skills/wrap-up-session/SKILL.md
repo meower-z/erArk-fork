@@ -10,10 +10,11 @@ When the user asks to wrap up a session, perform the steps below in order. This 
 ## 1. Commit skill + docs updates to local `main`
 
 - Confirm you are on `main` in the main worktree (`/home/ubuntu/games/erArk`), not a linked worktree.
+- **Wiki fold check** — if this session landed any behavior change (commit, merged PR, mod enable/disable): scan `docs/wiki/INDEX.md` for pages whose facts the change touched, and run `/project-wiki` to fold them (rewrite as current truth, refresh `timestamp`) so the wiki update commits together with the session's docs. Skip only when the session changed no behavior.
 - `main` HEAD may have advanced during the session (Windows pushes; other sessions commit skill/docs updates). Run `git log` and `git status` first — much of your work may already be committed. If a file you edited shows no diff against HEAD, verify the committed content actually contains your final edits (`git show HEAD:<path> | grep <marker>`) before assuming it is yours and current.
 - Stage ONLY skill and docs changes that are yours this session:
   - `.codex/skills/**` (this is the tracked, canonical copy; `.claude/skills/**` is an untracked local mirror — keep both identical, but only `.codex/skills` is committed).
-  - `CONTEXT.md`, `docs/adr/**`, `docs/agents/**`, and `.scratch/**` files you changed (the local issue tracker and domain docs; see `docs/agents/issue-tracker.md`).
+  - `CONTEXT.md`, `docs/adr/**`, `docs/agents/**`, `docs/wiki/**`, and `.scratch/**` files you changed (the local issue tracker, domain docs, and wiki; see `docs/agents/issue-tracker.md`).
   - agent definitions under `.codex/agents/**` you added.
 - Do NOT stage, and restore with `git checkout -- <path>` if you dirtied them: `.codex-evidence/`, `.venv/`, `save/`, `save.bak/`, `note_for_codex`, generated `data/*.json`, `Script/Config/config_def.py`, `data/po/**` (buildconfig/buildpo noise), runtime `config.ini` and `mod/mod_config.json` (skip-worktree local config). If you set `config.ini web_draw=0` for Tk evidence, restore it to `1`.
 - Leave other sessions' pending docs/ticket edits untouched. Commit surgically (one logical change) with identity `meower-z <299913659+meower-z@users.noreply.github.com>` and a `docs(...)`-style message.
