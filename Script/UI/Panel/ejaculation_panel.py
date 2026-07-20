@@ -199,12 +199,14 @@ def common_ejaculation():
         #     semen_count = character_data.semen_point
 
         # 优先扣除临时额外精液值，不够的再扣除基础精液值
+        # 注意：semen_count 是本次实际射精量，需原样返回给下游（污浊/射精位置/受孕/料理等），
+        # 扣除步骤只决定从哪类资源里扣，用独立变量记账，不得改写 semen_count。
         if character_data.tem_extra_semen_point > semen_count:
             character_data.tem_extra_semen_point -= semen_count
         else:
-            semen_count -= character_data.tem_extra_semen_point
+            base_deduct = semen_count - character_data.tem_extra_semen_point
             character_data.tem_extra_semen_point = 0
-            character_data.semen_point -= semen_count
+            character_data.semen_point -= base_deduct
         character_data.semen_point = max(0, character_data.semen_point)
 
         return semen_text,semen_count
