@@ -7,11 +7,13 @@ from Script.Core import (
     cache_control,
     game_type,
     flow_handle,
+    io_init,
     constant,
     py_cmd,
 )
 from Script.Design import attr_text, map_handle, handle_premise
 from Script.Config import game_config
+from tests import static_check as static_check_system
 import logging, time
 
 cache: game_type.Cache = cache_control.cache
@@ -55,7 +57,6 @@ class InScenePanel:
                 break
             # web模式下清屏
             if cache.web_mode:
-                from Script.Core import io_init
                 io_init.clear_screen()
                 io_init.clear_order()
             # 绘制的开始时间
@@ -358,6 +359,10 @@ class InScenePanel:
             ask_list.extend(instruct_panel.return_list)
             logging.debug(f'————————')
             logging.debug(f'指令外，ask_list = {ask_list}')
+            # 静态状态检查：在本轮玩家指令结算完毕、等待下一次输入前执行一次，绝不阻断游戏
+            # （受系统设置13"是否开启游戏状态自检"控制；返回True=本轮新记录到状态不自洽）
+            if cache.all_system_setting.base_setting.get(13, 1) and static_check_system.run_turn_check():
+                io_init.era_print(f"警告：检测到游戏逻辑状态不自洽，请把 {static_check_system.LOG_PATH} 文件提交给开发者。\n", "warning")
             flow_handle.askfor_all(ask_list)
             mid_3_draw = time.time()
             logging.debug(f'————————')

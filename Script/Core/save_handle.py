@@ -515,6 +515,14 @@ def input_load_save(save_id: str):
     # 消耗掉一次性的输入许可却不产生任何指令，askfor_all 从此收不到输入，游戏静默卡死
     cache.wframe_mouse = game_type.WFrameMouse()
 
+    # 载入完成后对已知的存档数据异常做保守自动修复并留痕（受系统设置13总开关控制，与每回合检查同开同关；
+    # 绝不抛异常、绝不阻断载入。两面板已在启动时无条件导入该包，此处开关关闭时并不少载入包，
+    # 只是不触发本次修复；import放在if内仅为避免在读档路径上产生不必要的顶层依赖顺序）
+    if cache.all_system_setting.base_setting.get(13, 1):
+        from tests import static_check as static_check_system
+
+        static_check_system.run_load_repair()
+
 
 def update_dict_with_default(loaded_dict, default_dict):
     """

@@ -14,10 +14,12 @@ from Script.Core import (
     cache_control,
     game_type,
     flow_handle,
+    io_init,
     constant,
 )
 from Script.Design import attr_text, map_handle, game_time, handle_premise
 from Script.Config import game_config
+from tests import static_check as static_check_system
 from Script.System.Web_Draw_System import (
     SceneRenderer,
     CharacterRenderer,
@@ -77,7 +79,6 @@ class InScenePanelWeb:
         此时前端会保留场景信息栏和选项卡，只在内容区域渲染子面板内容。
         当从子面板返回时，会清除子面板模式。
         """
-        from Script.Core import io_init
         from Script.System.Instruct_System import handle_instruct as instruct_handler
         from Script.System.Web_Draw_System import exit_sub_panel_mode, is_in_sub_panel_mode
         
@@ -132,7 +133,12 @@ class InScenePanelWeb:
             
             # 绑定面板选项卡指令并等待用户选择
             ask_list = self._bind_panel_tabs_and_get_ask_list()
-            
+
+            # 静态状态检查：在本轮玩家指令结算完毕、等待下一次输入前执行一次，绝不阻断游戏
+            # （受系统设置13"是否开启游戏状态自检"控制；返回True=本轮新记录到状态不自洽）
+            if cache.all_system_setting.base_setting.get(13, 1) and static_check_system.run_turn_check():
+                io_init.era_print(f"警告：检测到游戏逻辑状态不自洽，请把 {static_check_system.LOG_PATH} 文件提交给开发者。\n", "warning")
+
             # 等待前端输入（通过按钮点击）
             flow_handle.askfor_all(ask_list)
 
