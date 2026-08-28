@@ -176,7 +176,7 @@ def recover_from_unconscious_h(character_id: int, info_text: str = ""):
     Keyword arguments:\n
     character_id -- 角色id\n
     """
-    from Script.Settle import default
+    from Script.Settle import default, default_cloth
     character_data: game_type.Character = cache.character_data[character_id]
     target_data: game_type.Character = cache.character_data[character_data.target_character_id]
     scene_path_str = map_handle.get_map_system_path_str_for_list(character_data.position)
@@ -225,7 +225,7 @@ def recover_from_unconscious_h(character_id: int, info_text: str = ""):
         tem_behavior_id = character_data.behavior.behavior_id
         tem_state = character_data.state
         # 结算交互对象以外的其他角色
-        for chara_id in scene_data.character_list:
+        for chara_id in scene_data.character_list.copy():
             # 如果是玩家，则跳过
             if chara_id == character_id:
                 continue
@@ -233,7 +233,14 @@ def recover_from_unconscious_h(character_id: int, info_text: str = ""):
             if chara_id == target_data.cid:
                 continue
             # 结算其他角色
-            handle_npc_instruct_condition(character_id, False, chara_id, True)
+            chara_continue_h = handle_npc_instruct_condition(character_id, False, chara_id, True)
+            # 返回True的成员在结算中被跳过了结束结算，此处按其他成员的结束结算内容补做：
+            # 退出奖励、H状态归位、穿回衣物。先把目标指向自己，避免退出奖励波及其交互对象
+            if chara_continue_h:
+                cache.character_data[chara_id].target_character_id = chara_id
+                default.handle_end_h_add_hpmp_max(chara_id, 1, game_type.CharacterStatusChange(), cache.game_time)
+                default.handle_self_h_state_reset(chara_id, 1, game_type.CharacterStatusChange(), cache.game_time)
+                default_cloth.handle_self_cloth_back(chara_id, 1, game_type.CharacterStatusChange(), cache.game_time)
         # 恢复玩家的交互对象与行为
         character_data.target_character_id = target_data.cid
         character_data.behavior.behavior_id = tem_behavior_id
