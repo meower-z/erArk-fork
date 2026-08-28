@@ -85,41 +85,39 @@ def get_open_dormitory_rooms_by_layer() -> Dict[int, List[Tuple[str, str]]]:
     功能: 返回已开放房间，key=层号，value=[(房间名, 场景路径)]
     """
     result: Dict[int, List[Tuple[str, str]]] = defaultdict(list)
-    scene_name_to_path = {}
-    for scene_path in cache.scene_data:
-        scene_name_to_path[cache.scene_data[scene_path].scene_name] = scene_path
+    # 房间号取自地图目录路径（形如 宿舍/5区/501），该路径不经翻译，与语言无关。
+    room_path_by_no: Dict[int, str] = {}
+    for scene_path in constant.place_data["Dormitory"]:
+        match = re.fullmatch(r"宿舍[\\/]\d区[\\/](\d{3})", scene_path)
+        if match:
+            room_path_by_no[int(match.group(1))] = scene_path
 
     max_open_layer = get_dormitory_max_open_layer()
     dormitory_level = _get_dormitory_level()
     base_open_room_upper_no = _get_base_open_room_upper_no()
 
-    for open_cid, open_data in game_config.config_facility_open.items():
-        room_name = open_data.name
+    open_room_no_set: Set[int] = set()
+    for open_cid in game_config.config_facility_open:
         if not cache.rhodes_island.facility_open.get(open_cid, False):
             continue
-        # 严格按宿舍房间命名格式过滤，避免受语言翻译文本影响。
-        match = re.fullmatch(r"宿舍(\d)\d{2}房", room_name)
-        if not match:
+        # 宿舍房间在 Facility_open.csv 中的设施id固定为 1000+房间号，用它而非翻译后的设施名判定房间身份。
+        if not 1000 < open_cid < 2000:
             continue
-        layer = int(match.group(1))
-        if layer <= 0 or layer > max_open_layer:
-            continue
-        room_path = scene_name_to_path.get(room_name, "")
-        if room_path:
-            result[layer].append((room_name, room_path))
+        open_room_no_set.add(open_cid - 1000)
 
     # 等级1时，101-106为基础默认开放房，未配置在 Facility_open 中，需补齐。
     if dormitory_level >= 1 and max_open_layer >= 1:
-        for room_no in range(101, base_open_room_upper_no + 1):
-            room_name = f"宿舍{room_no}房"
-            room_path = scene_name_to_path.get(room_name, "")
-            if room_path:
-                result[1].append((room_name, room_path))
+        open_room_no_set.update(range(101, base_open_room_upper_no + 1))
 
-    for layer in result:
-        # 去重后排序，避免基础补齐与配置项发生重复。
-        unique_room = {name: path for name, path in result[layer]}
-        result[layer] = sorted(unique_room.items(), key=lambda x: x[0])
+    # 按房间号升序输出，房间号百位即所在层
+    for room_no in sorted(open_room_no_set):
+        layer = room_no // 100
+        if layer <= 0 or layer > max_open_layer:
+            continue
+        room_path = room_path_by_no.get(room_no, "")
+        if room_path:
+            # 房间名取翻译后的场景名，仅用于显示
+            result[layer].append((cache.scene_data[room_path].scene_name, room_path))
     return dict(result)
 
 
