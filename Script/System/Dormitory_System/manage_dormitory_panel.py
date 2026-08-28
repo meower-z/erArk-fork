@@ -863,7 +863,7 @@ class Manage_Dormitory_Panel:
         将被撤销任命的宿舍管理员恢复原宿舍
         输入类型: character_id(int)
         输出类型: 无
-        功能: 若角色当前在舍管房且存在 pre_dormitory，则恢复到原宿舍并清空 pre_dormitory
+        功能: 若角色当前在舍管房且存在 pre_dormitory，则恢复其宿舍归属（原宿舍已住满时改分到其他空床宿舍）并清空 pre_dormitory
         """
         if character_id not in cache.character_data:
             return
@@ -874,9 +874,7 @@ class Manage_Dormitory_Panel:
         if character_data.pre_dormitory == "":
             return
 
-        restore_path = character_data.pre_dormitory
-        character_data.dormitory = restore_path
-        character_data.pre_dormitory = ""
+        restore_path = common.restore_character_dormitory(character_id)
 
         character_position = character_data.position
         target_scene = map_handle.get_map_system_path_for_str(restore_path)

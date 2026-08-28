@@ -161,6 +161,46 @@ def get_dormitory_resident_id_set() -> Set[int]:
     return resident_id_set
 
 
+def restore_character_dormitory(character_id: int) -> str:
+    """
+    结束临时住宿状态时恢复角色的宿舍归属
+    输入类型: character_id(int)
+    输出类型: str
+    功能: 以角色的 pre_dormitory 为原宿舍，原宿舍仍有空床时回原宿舍，原宿舍已住满两人时改取第一间仍有空床的开放普通宿舍，全部住满时仍回原宿舍；随后写入 dormitory 并清空 pre_dormitory，返回落点宿舍路径。pre_dormitory 为空时不改动 dormitory，直接返回其当前值
+    """
+    character_data: game_type.Character = cache.character_data[character_id]
+    pre_dormitory = character_data.pre_dormitory
+    if pre_dormitory == "":
+        return character_data.dormitory
+
+    # 按层号升序、层内房名升序展开全部开放普通宿舍的场景路径
+    open_rooms_by_layer = get_open_dormitory_rooms_by_layer()
+    open_room_paths: List[str] = []
+    for layer in sorted(open_rooms_by_layer):
+        for _room_name, room_path in open_rooms_by_layer[layer]:
+            open_room_paths.append(room_path)
+    # 统计各开放普通宿舍现有居住人数，排除正在恢复的角色本人
+    room_count: Dict[str, int] = {room_path: 0 for room_path in open_room_paths}
+    for resident_id in get_dormitory_resident_id_set():
+        if resident_id == character_id:
+            continue
+        resident_dormitory = cache.character_data[resident_id].dormitory
+        if resident_dormitory in room_count:
+            room_count[resident_dormitory] += 1
+
+    # 原宿舍不是开放普通宿舍或仍有空床时回原宿舍，已住满两人时改取第一间仍有空床的开放普通宿舍
+    restore_path = pre_dormitory
+    if room_count.get(pre_dormitory, 0) >= 2:
+        for room_path in open_room_paths:
+            if room_count[room_path] < 2:
+                restore_path = room_path
+                break
+
+    character_data.dormitory = restore_path
+    character_data.pre_dormitory = ""
+    return restore_path
+
+
 def get_dormitory_occupants_text() -> str:
     """
     获取当前宿舍区内角色分布文本
