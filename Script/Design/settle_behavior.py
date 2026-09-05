@@ -417,7 +417,7 @@ def handle_instruct_data(
                 if effect_id not in constant.settle_behavior_effect_data:
                     print(f"error 不存在的结算 = {effect_id}")
                     continue
-                constant.settle_behavior_effect_data[effect_id](character_id, add_time, change_data, now_time)
+                constant.settle_behavior_effect_data[effect_id](character_id, now_character_data.target_character_id, add_time, change_data, now_time)
         # 如果是对他人的行为，则将自己的id与行动结束时间记录到对方的数据中
         if now_character_data.target_character_id != character_id:
             end_time = game_time.get_sub_date(minute=now_character_data.behavior.duration, old_date=now_character_data.behavior.start_time)
@@ -427,7 +427,7 @@ def handle_instruct_data(
         if behavior_id in game_config.config_behavior:
             behavior_data = game_config.config_behavior[behavior_id]
             if _('娱乐') in behavior_data.tag or _('工作') in behavior_data.tag:
-                constant.settle_behavior_effect_data[1751](character_id, add_time, change_data, now_time)
+                constant.settle_behavior_effect_data[1751](character_id, now_character_data.target_character_id, add_time, change_data, now_time)
     # 进行二段结算
     second_behavior.check_second_effect(character_id, change_data)
     # 进行额外经验结算
@@ -478,25 +478,26 @@ def handle_event_data(event_id, character_id, add_time, change_data, now_time):
             # 其他结算判定
             else:
                 constant.settle_behavior_effect_data[int(effect)](
-                    character_id, add_time, change_data, now_time
+                    character_id, cache.character_data[character_id].target_character_id, add_time, change_data, now_time
                 )
     return change_data
 
 
 def add_settle_behavior_effect(behavior_effect_id: int):
     """
-    添加行为结算处理
-    Keyword arguments:
-    behavior_id -- 行为id
+    注册普通行为效果，保留效果函数的参数接口。
+    参数:
+        behavior_effect_id (int): 效果id。
+    返回:
+        callable: 注册装饰器，接收并返回效果函数。
+    效果函数依次接收执行者id、目标id、结算时长、变化记录和结算时间。
+    目标id由调用方在每次调用前确定，不使用默认目标或特殊值。
     """
 
     def decorator(func):
-        @wraps(func)
-        def return_wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        constant.settle_behavior_effect_data[behavior_effect_id] = return_wrapper
-        return return_wrapper
+        """输入效果函数，注册并返回原函数。"""
+        constant.settle_behavior_effect_data[behavior_effect_id] = func
+        return func
 
     return decorator
 
