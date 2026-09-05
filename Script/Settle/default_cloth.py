@@ -23,7 +23,7 @@ cache: game_type.Cache = cache_control.cache
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.CHANGE_UNDERWERA)
 def handle_change_underware(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -32,7 +32,7 @@ def handle_change_underware(
     """
     换新的内衣（胸部+内裤）
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -40,16 +40,16 @@ def handle_change_underware(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     character_data.cloth.cloth_wear[6] = []
     character_data.cloth.cloth_wear[9] = []
-    if character_id:
-        clothing.get_underwear(character_id)
+    if actor_id:
+        clothing.get_underwear(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.BRA_SEE)
 def handle_bra_see(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -58,7 +58,7 @@ def handle_bra_see(
     """
     胸罩可视
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -66,13 +66,13 @@ def handle_bra_see(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     character_data.cloth.cloth_see[6] = True
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.TARGET_BRA_SEE)
 def handle_target_bra_see(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -81,7 +81,7 @@ def handle_target_bra_see(
     """
     交互对象胸罩可视
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -89,13 +89,13 @@ def handle_target_bra_see(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     handle_bra_see(character_data.target_character_id, cache.character_data[character_data.target_character_id].target_character_id, add_time, change_data, now_time)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.PAN_SEE)
 def handle_pan_see(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -104,7 +104,7 @@ def handle_pan_see(
     """
     内裤可视
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -112,13 +112,13 @@ def handle_pan_see(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     character_data.cloth.cloth_see[9] = True
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.TARGET_PAN_SEE)
 def handle_target_pan_see(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -127,7 +127,7 @@ def handle_target_pan_see(
     """
     交互对象内裤可视
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -135,13 +135,13 @@ def handle_target_pan_see(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     handle_pan_see(character_data.target_character_id, cache.character_data[character_data.target_character_id].target_character_id, add_time, change_data, now_time)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.CLOTH_SEE_ZERO)
 def handle_cloth_see_zero(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -150,7 +150,7 @@ def handle_cloth_see_zero(
     """
     内衣可视清零
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -158,13 +158,13 @@ def handle_cloth_see_zero(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     character_data.cloth.cloth_see = {6:False,9:False}
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.RESTE_CLOTH)
 def handle_reset_cloth(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -173,7 +173,7 @@ def handle_reset_cloth(
     """
     衣服重置为初始状态
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -182,13 +182,13 @@ def handle_reset_cloth(
     
     if not add_time:
         return
-    if character_id:
-        clothing.get_npc_cloth(character_id)
+    if actor_id:
+        clothing.get_npc_cloth(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.SCENE_ALL_CHARACTERS_BRA_PAN_SEE)
 def handle_scene_all_characters_bra_pan_see(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -197,7 +197,7 @@ def handle_scene_all_characters_bra_pan_see(
     """
     场景内所有角色胸罩、内裤可视
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -205,7 +205,7 @@ def handle_scene_all_characters_bra_pan_see(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     scene_path_str = map_handle.get_map_system_path_str_for_list(character_data.position)
     scene_data: game_type.Scene = cache.scene_data[scene_path_str]
     for chara_id in scene_data.character_list:
@@ -217,7 +217,7 @@ def handle_scene_all_characters_bra_pan_see(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_T_PAN)
 def handle_get_t_pan(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -226,7 +226,7 @@ def handle_get_t_pan(
     """
     获得交互对象的内裤
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -234,7 +234,7 @@ def handle_get_t_pan(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     clothing.pl_get_chara_pan(character_data.target_character_id)
     # 绘制一个空白的等待信息
     now_draw = draw.WaitDraw()
@@ -244,7 +244,7 @@ def handle_get_t_pan(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_T_SOCKS)
 def handle_get_t_sock(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -253,7 +253,7 @@ def handle_get_t_sock(
     """
     获得交互对象的袜子
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -261,7 +261,7 @@ def handle_get_t_sock(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     clothing.pl_get_chara_socks(character_data.target_character_id)
     # 绘制一个空白的等待信息
     now_draw = draw.WaitDraw()
@@ -271,7 +271,7 @@ def handle_get_t_sock(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_SCENE_T_PAN)
 def handle_get_scene_t_pan(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -280,7 +280,7 @@ def handle_get_scene_t_pan(
     """
     获得场景内所有其他角色的内裤
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -288,7 +288,7 @@ def handle_get_scene_t_pan(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     scene_path_str = map_handle.get_map_system_path_str_for_list(character_data.position)
     scene_data: game_type.Scene = cache.scene_data[scene_path_str]
     # 遍历当前角色列表
@@ -304,7 +304,7 @@ def handle_get_scene_t_pan(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_SCENE_T_SOCKS)
 def handle_get_scene_t_socks(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -313,7 +313,7 @@ def handle_get_scene_t_socks(
     """
     获得场景内所有其他角色的袜子
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -321,7 +321,7 @@ def handle_get_scene_t_socks(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     scene_path_str = map_handle.get_map_system_path_str_for_list(character_data.position)
     scene_data: game_type.Scene = cache.scene_data[scene_path_str]
     # 遍历当前角色列表
@@ -337,7 +337,7 @@ def handle_get_scene_t_socks(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.SELF_CLOTH_BACK)
 def handle_self_cloth_back(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -346,7 +346,7 @@ def handle_self_cloth_back(
     """
     自己穿回H时脱掉的衣服
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -354,7 +354,7 @@ def handle_self_cloth_back(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
 
     # 穿回脱下的衣服
     wear_flag = False
@@ -364,7 +364,7 @@ def handle_self_cloth_back(
             wear_flag = True
     if wear_flag:
         # 衣物穿戴变化后刷新角色异常状态位缓存
-        handle_premise.settle_chara_unnormal_flag(character_id, 4)
+        handle_premise.settle_chara_unnormal_flag(actor_id, 4)
         now_draw = draw.WaitDraw()
         now_draw.width = window_width
         if character_data.sp_flag.unconscious_h:
@@ -376,7 +376,7 @@ def handle_self_cloth_back(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.T_CLOTH_BACK)
 def handle_t_cloth_back(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -385,7 +385,7 @@ def handle_t_cloth_back(
     """
     交互对象穿回H时脱掉的衣服
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -393,13 +393,13 @@ def handle_t_cloth_back(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     handle_self_cloth_back(character_data.target_character_id, cache.character_data[character_data.target_character_id].target_character_id, add_time, change_data, now_time)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.SCENE_ALL_CHARACTERS_CLOTH_BACK)
 def handle_scene_all_characters_cloth_back(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -408,7 +408,7 @@ def handle_scene_all_characters_cloth_back(
     """
     场景内所有角色穿回H时脱掉的衣服
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -416,7 +416,7 @@ def handle_scene_all_characters_cloth_back(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     scene_path_str = map_handle.get_map_system_path_str_for_list(character_data.position)
     scene_data: game_type.Scene = cache.scene_data[scene_path_str]
     # 遍历当前角色列表
@@ -428,7 +428,7 @@ def handle_scene_all_characters_cloth_back(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.WEAR_CLOTH_OFF)
 def handle_wear_cloth_off(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -437,7 +437,7 @@ def handle_wear_cloth_off(
     """
     脱掉全部衣服
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -445,12 +445,12 @@ def handle_wear_cloth_off(
     """
     if not add_time:
         return
-    clothing.get_all_cloth_off(character_id)
+    clothing.get_all_cloth_off(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.WEAR_CLOTH_OFF_MOST)
 def handle_wear_cloth_off_most(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -459,7 +459,7 @@ def handle_wear_cloth_off_most(
     """
     脱掉大部分衣服（保留首饰等）
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -467,12 +467,12 @@ def handle_wear_cloth_off_most(
     """
     if not add_time:
         return
-    clothing.get_cloth_wear_zero_except_need(character_id)
+    clothing.get_cloth_wear_zero_except_need(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_SHOWER_CLOTH)
 def handle_get_shower_cloth(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -481,7 +481,7 @@ def handle_get_shower_cloth(
     """
     清零其他衣服并换上浴帽和浴巾
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -489,12 +489,12 @@ def handle_get_shower_cloth(
     """
     if not add_time:
         return
-    clothing.get_shower_cloth(character_id)
+    clothing.get_shower_cloth(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_SWIM_CLOTH)
 def handle_get_swim_cloth(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -503,7 +503,7 @@ def handle_get_swim_cloth(
     """
     清零其他衣服并换上泳衣
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -511,12 +511,12 @@ def handle_get_swim_cloth(
     """
     if not add_time:
         return
-    clothing.get_swim_cloth(character_id)
+    clothing.get_swim_cloth(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_SLEEP_CLOTH)
 def handle_get_sleep_cloth(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -525,7 +525,7 @@ def handle_get_sleep_cloth(
     """
     睡觉服装结算（正常时清零其他衣服并换上睡衣）
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -535,18 +535,18 @@ def handle_get_sleep_cloth(
         return
     from Script.Design import handle_premise
     # 管理中则全裸
-    if handle_premise.handle_ask_not_wear_cloth_in_sleep(character_id):
-        clothing.get_all_cloth_off(character_id)
+    if handle_premise.handle_ask_not_wear_cloth_in_sleep(actor_id):
+        clothing.get_all_cloth_off(actor_id)
     # 囚犯则跳过
-    elif handle_premise.handle_imprisonment_1(character_id):
+    elif handle_premise.handle_imprisonment_1(actor_id):
         pass
     else:
-        clothing.get_sleep_cloth(character_id)
+        clothing.get_sleep_cloth(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_SELF_PRISONER_CLOTH)
 def handle_get_self_prisoner_cloth(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -555,7 +555,7 @@ def handle_get_self_prisoner_cloth(
     """
     按照监禁设定对自身进行囚犯服装结算
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -563,12 +563,12 @@ def handle_get_self_prisoner_cloth(
     """
     if not add_time:
         return
-    clothing.handle_prisoner_clothing(character_id)
+    clothing.handle_prisoner_clothing(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.LOCKER_CLOTH_IN_SHOWER_RESET)
 def handle_locker_cloth_in_shower_reset(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -577,7 +577,7 @@ def handle_locker_cloth_in_shower_reset(
     """
     大浴场衣柜里的衣服清零
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -585,15 +585,15 @@ def handle_locker_cloth_in_shower_reset(
     """
     if not add_time:
         return
-    character_data = cache.character_data[character_id]
+    character_data = cache.character_data[actor_id]
     character_data.cloth.cloth_locker_in_shower = attr_calculation.get_shower_cloth_locker_zero()
     # print(f"debug {character_data.name} cloth_locker = {character_data.cloth.cloth_locker}")
-    clothing.clean_locker_semen(character_id)
+    clothing.clean_locker_semen(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.WEAR_TO_SHOWER_LOCKER)
 def handle_wear_to_shower_locker(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -602,7 +602,7 @@ def handle_wear_to_shower_locker(
     """
     身上首饰以外的衣服转移到大浴场柜子里
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -610,7 +610,7 @@ def handle_wear_to_shower_locker(
     """
     if not add_time:
         return
-    character_data = cache.character_data[character_id]
+    character_data = cache.character_data[actor_id]
 
     for clothing_type in game_config.config_clothing_type:
         if len(character_data.cloth.cloth_wear[clothing_type]):
@@ -620,7 +620,7 @@ def handle_wear_to_shower_locker(
                 # 不转移首饰和必须穿着的衣服
                 if (
                     game_config.config_clothing_tem[cloth_id].tag != 6 
-                    and cloth_id not in clothing.chara_special_wear_cloth(character_id)
+                    and cloth_id not in clothing.chara_special_wear_cloth(actor_id)
                 ):
                     # print(f"debug move_cloth_id = {cloth_id}")
                     character_data.cloth.cloth_wear[clothing_type].remove(cloth_id)
@@ -635,14 +635,14 @@ def handle_wear_to_shower_locker(
     character_data.dirty.cloth_locker_semen, character_data.dirty.cloth_semen = character_data.dirty.cloth_semen, character_data.dirty.cloth_locker_semen
     # 衣物离开身体时去除服装部位上的避孕套装饰
     from Script.System.Item_System import condom_handle
-    condom_handle.remove_cloth_decoration(character_id)
+    condom_handle.remove_cloth_decoration(actor_id)
     # 衣物穿戴变化后刷新角色异常状态位缓存
-    handle_premise.settle_chara_unnormal_flag(character_id, 4)
+    handle_premise.settle_chara_unnormal_flag(actor_id, 4)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.SHOWER_LOCKER_TO_WEAR)
 def handle_shower_locker_to_wear(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -651,7 +651,7 @@ def handle_shower_locker_to_wear(
     """
     大浴场衣柜里的衣服转移到身上
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -660,7 +660,7 @@ def handle_shower_locker_to_wear(
     if not add_time:
         return
     # 从缓存中获取角色数据
-    character_data = cache.character_data[character_id]
+    character_data = cache.character_data[actor_id]
 
     # 遍历游戏配置中的所有服装类型
     for clothing_type in game_config.config_clothing_type:
@@ -676,16 +676,16 @@ def handle_shower_locker_to_wear(
                 character_data.cloth.cloth_locker_in_shower[clothing_type].remove(cloth_id)
 
     # 将衣柜里的衣服精液转移到穿着的衣服上
-    clothing.locker_cloth_semen_to_wear_cloth_semen(character_id)
+    clothing.locker_cloth_semen_to_wear_cloth_semen(actor_id)
     # 穿特殊服装
-    clothing.chara_special_wear_cloth(character_id)
+    clothing.chara_special_wear_cloth(actor_id)
     # 衣物穿戴变化后刷新角色异常状态位缓存
-    handle_premise.settle_chara_unnormal_flag(character_id, 4)
+    handle_premise.settle_chara_unnormal_flag(actor_id, 4)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.FOOT_CLOTH_TO_SHOWER_LOCKER)
 def handle_foot_cloth_to_shower_locker(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -694,7 +694,7 @@ def handle_foot_cloth_to_shower_locker(
     """
     袜子和鞋子转移到大浴场衣柜里
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -702,7 +702,7 @@ def handle_foot_cloth_to_shower_locker(
     """
     if not add_time:
         return
-    character_data = cache.character_data[character_id]
+    character_data = cache.character_data[actor_id]
 
     for clothing_type in {10,11}:
         if len(character_data.cloth.cloth_wear[clothing_type]):
@@ -712,7 +712,7 @@ def handle_foot_cloth_to_shower_locker(
                 # 不转移首饰和必须穿着的衣服
                 if (
                     game_config.config_clothing_tem[cloth_id].tag != 6 
-                    and cloth_id not in clothing.chara_special_wear_cloth(character_id)
+                    and cloth_id not in clothing.chara_special_wear_cloth(actor_id)
                 ):
                     # print(f"debug move_cloth_id = {cloth_id}")
                     character_data.cloth.cloth_wear[clothing_type].remove(cloth_id)
@@ -727,12 +727,12 @@ def handle_foot_cloth_to_shower_locker(
         character_data.dirty.cloth_semen[clothing_type], character_data.dirty.cloth_locker_semen[clothing_type] = character_data.dirty.cloth_locker_semen[clothing_type], character_data.dirty.cloth_semen[clothing_type]
     # 袜子和鞋子离开身体时去除对应部位上的避孕套装饰
     from Script.System.Item_System import condom_handle
-    condom_handle.remove_cloth_decoration(character_id, [10, 11])
+    condom_handle.remove_cloth_decoration(actor_id, [10, 11])
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.SHOWER_LOCKER_TO_DORMITORY_LOCKER)
 def handle_shower_locker_to_dormitory_locker(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -741,7 +741,7 @@ def handle_shower_locker_to_dormitory_locker(
     """
     大浴场衣柜里的衣服转移到宿舍衣柜
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -750,7 +750,7 @@ def handle_shower_locker_to_dormitory_locker(
     if not add_time:
         return
     # 从缓存中获取角色数据
-    character_data = cache.character_data[character_id]
+    character_data = cache.character_data[actor_id]
 
     # 同居助理的宿舍地址即博士房间，所以她在博士房间洗澡后，衣服同样转进这份宿舍衣柜，
     # 次日在博士房间起床时再由效果649穿回，与普通角色完全一致
@@ -760,7 +760,7 @@ def handle_shower_locker_to_dormitory_locker(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.WEAR_TO_DORMITORY_LOCKER)
 def handle_wear_to_dormitory_locker(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -769,7 +769,7 @@ def handle_wear_to_dormitory_locker(
     """
     身上除首饰与必穿项外的所有衣服转移到宿舍衣柜里
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -778,15 +778,15 @@ def handle_wear_to_dormitory_locker(
     if not add_time:
         return
     # 玩家没有换睡衣的流程，衣服不进衣柜，与clothing.get_sleep_cloth()的判定保持一致
-    if not character_id:
+    if not actor_id:
         return
     from Script.Design import handle_premise
 
     # 囚犯睡觉时不换睡衣，若把囚服转走会变成全裸睡觉，故跳过
-    if handle_premise.handle_imprisonment_1(character_id):
+    if handle_premise.handle_imprisonment_1(actor_id):
         return
 
-    character_data = cache.character_data[character_id]
+    character_data = cache.character_data[actor_id]
 
     # 宿舍衣柜里已经有衣服时跳过，避免洗完澡（效果647）存进来的白天衣服被浴帽浴巾污染
     for clothing_type in game_config.config_clothing_type:
@@ -794,7 +794,7 @@ def handle_wear_to_dormitory_locker(
             return
 
     # 提前取得必穿项列表（该函数会把缺失的必穿项补回身上，只需调用一次）
-    special_cloth_list = clothing.chara_special_wear_cloth(character_id)
+    special_cloth_list = clothing.chara_special_wear_cloth(actor_id)
 
     # 遍历所有服装部位，把身上的衣服转移到宿舍衣柜里
     for clothing_type in game_config.config_clothing_type:
@@ -822,12 +822,12 @@ def handle_wear_to_dormitory_locker(
     character_data.dirty.cloth_locker_semen, character_data.dirty.cloth_semen = character_data.dirty.cloth_semen, character_data.dirty.cloth_locker_semen
     # 衣物离开身体时去除服装部位上的避孕套装饰
     from Script.System.Item_System import condom_handle
-    condom_handle.remove_cloth_decoration(character_id)
+    condom_handle.remove_cloth_decoration(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.CLEAN_LOCKER_CLOTH_SEMEN)
 def handle_clean_locker_cloth_semen(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -836,18 +836,18 @@ def handle_clean_locker_cloth_semen(
     """
     清理衣柜里的衣服精液
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
     now_time -- 结算的时间
     """
-    clothing.clean_locker_semen(character_id)
+    clothing.clean_locker_semen(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.GET_CLOTH_FROM_DORMITORY_LOCKER)
 def handle_get_cloth_from_dormitory_locker(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -856,18 +856,18 @@ def handle_get_cloth_from_dormitory_locker(
     """
     清空身上的旧衣服，从宿舍的衣柜里穿上衣服、内衣内裤，并转移衣柜中的精液数据到穿着的衣服上
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
     now_time -- 结算的时间
     """
-    clothing.get_cloth_from_dormitory_locker(character_id)
+    clothing.get_cloth_from_dormitory_locker(actor_id)
 
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.UP_AND_BRA_TO_TEM)
 def handle_up_and_bra_to_tem(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -876,7 +876,7 @@ def handle_up_and_bra_to_tem(
     """
     自己的上衣和胸罩转移到临时脱下
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -884,7 +884,7 @@ def handle_up_and_bra_to_tem(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
 
     for i in [5,6]:
         if len(character_data.cloth.cloth_wear[i]):
@@ -893,7 +893,7 @@ def handle_up_and_bra_to_tem(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.DOWN_AND_PAN_TO_TEM)
 def handle_down_and_pan_to_tem(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -902,7 +902,7 @@ def handle_down_and_pan_to_tem(
     """
     自己的下衣和内裤转移到临时脱下
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -910,7 +910,7 @@ def handle_down_and_pan_to_tem(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
 
     for i in [8,9]:
         if len(character_data.cloth.cloth_wear[i]):
@@ -919,7 +919,7 @@ def handle_down_and_pan_to_tem(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.TARGET_UP_AND_BRA_TO_TEM)
 def handle_target_up_and_bra_to_tem(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -928,7 +928,7 @@ def handle_target_up_and_bra_to_tem(
     """
     交互对象的上衣和胸罩转移到临时脱下
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -936,7 +936,7 @@ def handle_target_up_and_bra_to_tem(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     target_data: game_type.Character = cache.character_data[character_data.target_character_id]
 
     for i in [5,6]:
@@ -946,7 +946,7 @@ def handle_target_up_and_bra_to_tem(
 
 @settle_behavior.add_settle_behavior_effect(constant_effect.BehaviorEffect.TARGET_DOWN_AND_PAN_TO_TEM)
 def handle_target_down_and_pan_to_tem(
-    character_id: int,
+    actor_id: int,
     target_character_id: int,
     add_time: int,
     change_data: game_type.CharacterStatusChange,
@@ -955,7 +955,7 @@ def handle_target_down_and_pan_to_tem(
     """
     交互对象的下衣和内裤转移到临时脱下
     Keyword arguments:
-    character_id -- 角色id
+    actor_id -- 执行者id
     target_character_id -- 本次调用的目标角色id
     add_time -- 结算时间
     change_data -- 状态变更信息记录对象
@@ -963,7 +963,7 @@ def handle_target_down_and_pan_to_tem(
     """
     if not add_time:
         return
-    character_data: game_type.Character = cache.character_data[character_id]
+    character_data: game_type.Character = cache.character_data[actor_id]
     target_data: game_type.Character = cache.character_data[character_data.target_character_id]
 
     for i in [8,9]:

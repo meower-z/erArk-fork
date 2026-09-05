@@ -69,7 +69,7 @@ class EffectInterfaceTest(unittest.TestCase):
 
     def test_registry_requires_explicit_target(self):
         """所有注册效果接受五个必填参数，且注册表保留原函数；无返回值。"""
-        expected = ["character_id", "target_character_id", "add_time", "change_data", "now_time"]
+        expected = ["actor_id", "target_character_id", "add_time", "change_data", "now_time"]
         self.assertEqual(len(self.effects), len(self.effect_names))
         for effect in self.effects.values():
             with self.subTest(effect=effect.__name__):
